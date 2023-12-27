@@ -44,7 +44,7 @@ CONCURRENT_COUNT = 10  # 允许同时使用的用户数量
 SIM_K = 5
 INDEX_QUERY_TEMPRATURE = 1.0
 
-CHUANHU_TITLE = i18n("ChatGPT 4.0 🚀")
+CHUANHU_TITLE = i18n("ChatGPT 🚀")
 
 CHUANHU_DESCRIPTION = i18n(
     "[shibing624](https://github.com/shibing624)(XuMing) 开发")
