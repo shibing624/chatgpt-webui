@@ -9,3 +9,4 @@ Pygments
 markdown
 pandas
 commentjson
+PyPDF2
