@@ -11,7 +11,7 @@ class MOSS_Client(BaseLLMModel):
     def __init__(self, model_name='', user_name="", system_prompt=None):
         super().__init__(model_name=model_name, user=user_name)
         self.headers = {
-            'Authorization': "Bearer sk-3AmBmgGILenGk3N2514a7e3004354870Ac1aE0A45a1a7e64",
+            'Authorization': "Bearer sk-uNy6FQg3wg1Kzs60B44cDdD2A9Bc4e0aBeC69410A6Da0e8a",
             'Content-Type': 'application/json',
         }
         self.url = 'https://apejhvxcd.cloud.sealos.io/v1/chat/completions'
