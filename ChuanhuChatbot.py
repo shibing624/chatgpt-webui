@@ -487,7 +487,7 @@ demo.title = i18n("ChatGPT 🚀")
 if __name__ == "__main__":
     reload_javascript()
     demo.queue(concurrency_count=CONCURRENT_COUNT).launch(
-        server_name="0.0.0.0",
+        server_name="127.0.0.1",
         server_port=8009,
         share=False,
         blocked_paths=["config.json"],
