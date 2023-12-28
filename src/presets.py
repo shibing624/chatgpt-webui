@@ -48,6 +48,7 @@ custom_css_path = os.path.join(pwd_path, "../assets/custom.css")
 custom_js_path = os.path.join(pwd_path, "../assets/custom.js")
 external_js_path = os.path.join(pwd_path, "../assets/external-scripts.js")
 favicon_path = os.path.join(pwd_path, "../assets/favicon.ico")
+switcher_html_path = os.path.join(pwd_path, "../assets/html/appearance_switcher.html")
 
 # 错误信息
 STANDARD_ERROR_MSG = i18n("☹️发生了错误：")  # 错误信息的标准前缀
@@ -72,7 +73,7 @@ INDEX_QUERY_TEMPRATURE = 1.0
 
 CHUANHU_TITLE = i18n("ChatGPT 🚀")
 
-CHUANHU_DESCRIPTION = i18n("[shibing624](https://github.com/shibing624)(XuMing) 开发")
+CHUANHU_DESCRIPTION = i18n("develop by [shibing624](https://github.com/shibing624)(XuMing)")
 
 ONLINE_MODELS = [
     "gpt-3.5-turbo",

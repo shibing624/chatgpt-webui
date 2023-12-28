@@ -5,6 +5,6 @@
     "default_model": "gpt-4",
     "multi_api_key": false,
     "server_name": "0.0.0.0",
-    "server_port": 7860,
+    "server_port": 8009,
     "share": false
 }

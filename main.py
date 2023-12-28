@@ -23,6 +23,7 @@ from src.presets import (
     CHUANHU_DESCRIPTION,
     favicon_path,
     API_HOST,
+    switcher_html_path,
 )
 from src.utils import (
     get_geoip,
@@ -122,8 +123,8 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
                     with gr.Column(min_width=20, scale=1):
                         dislikeBtn = gr.Button(i18n("👎"))
 
-        with gr.Column(visible=True):
-            with gr.Column(min_width=50, scale=1):
+        with gr.Column():
+            with gr.Column(min_width=30, scale=1):
                 with gr.Tab(label=i18n("模型")):
                     keyTxt = gr.Textbox(
                         show_label=True,
@@ -219,7 +220,7 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
 
                 with gr.Tab(label=i18n("高级")):
                     gr.Markdown(i18n("# ⚠️ 务必谨慎更改 ⚠️\n\n如果无法使用请恢复默认设置"))
-                    gr.HTML(get_html("appearance_switcher.html").format(label=i18n("切换亮暗色主题")),
+                    gr.HTML(get_html(switcher_html_path).format(label=i18n("切换亮暗色主题")),
                             elem_classes="insert_block")
                     use_streaming_checkbox = gr.Checkbox(
                         label=i18n("实时传输回答"), value=True, visible=ENABLE_STREAMING_OPTION
@@ -322,11 +323,9 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
                         )
                         changeProxyBtn = gr.Button(i18n("🔄 设置代理地址"))
                         default_btn = gr.Button(i18n("🔙 恢复默认设置"))
-
     gr.Markdown(CHUANHU_DESCRIPTION, elem_id="description")
 
 
-    # https://github.com/gradio-app/gradio/pull/3296
     def create_greeting(request: gr.Request):
         if hasattr(request, "username") and request.username:  # is not None or is not ""
             logger.info(f"Get User Name: {request.username}")
@@ -335,7 +334,7 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
             user_info, user_name = gr.Markdown.update(value=f"", visible=True), ""
         current_model = get_model(model_name=MODELS[DEFAULT_MODEL], access_key=my_api_key)[0]
         current_model.set_user_identifier(user_name)
-        chatbot = gr.Chatbot.update(label=MODELS[DEFAULT_MODEL])
+        chatbot = gr.Chatbot.update(label="")
         return user_info, user_name, current_model, toggle_like_btn_visibility(
             DEFAULT_MODEL), *current_model.auto_load(), get_history_names(False, user_name), chatbot
 
@@ -527,7 +526,7 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
         show_progress=True,
     )
 
-demo.title = i18n("ChatGPT 🚀")
+demo.title = CHUANHU_TITLE
 
 if __name__ == "__main__":
     reload_javascript()
