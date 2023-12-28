@@ -1,42 +1,23 @@
-<div align="right">
-  <!-- 语言: -->
-  简体中文 | <a title="English" href="./readme/README_en.md">English</a> | <a title="Japanese" href="./readme/README_ja.md">日本語</a> | <a title="Russian" href="./readme/README_ru.md">Russian</a> | <a title="Korean" href="./readme/README_ko.md">한국어</a>
-</div>
+[**🇨🇳中文**](https://github.com/shibing624/chatgpt-webui/blob/main/README.md) | [**🌐English**](https://github.com/shibing624/chatgpt-webui/blob/main/README_EN.md) | [**📖文档/Docs**](https://github.com/shibing624/chatgpt-webui/wiki) | [**🤖模型/Models**](https://huggingface.co/shibing624) 
 
-<h1 align="center">川虎 Chat 🐯 Chuanhu Chat</h1>
 <div align="center">
   <a href="https://github.com/shibing624/chatgpt-webui">
-    <img src="https://github.com/shibing624/chatgpt-webui/assets/70903329/aca3a7ec-4f1d-4667-890c-a6f47bf08f63" alt="Logo" height="156">
+    <img src="https://github.com/shibing624/chatgpt-webui/blob/main/assert/icon.png" height="100" alt="Logo">
   </a>
-
-<p align="center">
-    <h3>为ChatGPT等多种LLM提供了一个轻快好用的Web图形界面和众多附加功能</h3>
-    <p align="center">
-      <a href="https://github.com/shibing624/chatgpt-webui/blob/main/LICENSE">
-        <img alt="Tests Passing" src="https://img.shields.io/github/license/shibing624/chatgpt-webui" />
-      </a>
-      <a href="https://gradio.app/">
-        <img alt="GitHub Contributors" src="https://img.shields.io/badge/Base-Gradio-fb7d1a?style=flat" />
-      </a>
-      <a href="https://t.me/tkdifferent">
-        <img alt="GitHub pull requests" src="https://img.shields.io/badge/Telegram-Group-blue.svg?logo=telegram" />
-      </a>
-      <p>
-        支持 GPT-4 · 基于文件问答 · LLM本地部署 · 联网搜索 · Agent 助理 ·  支持 Fine-tune
-      </p>
-      <a href="https://www.bilibili.com/video/BV1mo4y1r7eE"><strong>视频教程</strong></a>
-        ·
-      <a href="https://www.bilibili.com/video/BV1184y1w7aP"><strong>2.0介绍视频</strong></a>
-	||
-      <a href="https://huggingface.co/spaces/JohnSmith9982/ChuanhuChatGPT"><strong>在线体验</strong></a>
-      	·
-      <a href="https://huggingface.co/login?next=%2Fspaces%2FJohnSmith9982%2FChuanhuChatGPT%3Fduplicate%3Dtrue"><strong>一键部署</strong></a>
-    </p>
-  </p>
 </div>
 
-[![Video Title](https://github.com/shibing624/chatgpt-webui/assets/51039745/0eee1598-c2fd-41c6-bda9-7b059a3ce6e7.jpg)](https://github.com/shibing624/chatgpt-webui/assets/51039745/0eee1598-c2fd-41c6-bda9-7b059a3ce6e7?autoplay=1)
+-----------------
 
+# ChatGPT WebUI: ChatGPT webui by python gradio
+[![License Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![python_version](https://img.shields.io/badge/Python-3.8%2B-green.svg)](requirements.txt)
+[![GitHub issues](https://img.shields.io/github/issues/shibing624/chatgpt-webui.svg)](https://github.com/shibing624/chatgpt-webui/issues)
+[![Wechat Group](http://vlog.sfyc.ltd/wechat_everyday/wxgroup_logo.png?imageView2/0/w/60/h/20)](#Contact)
+
+
+**chatgpt-webui**: ChatGPT webui by gradio. 为ChatGPT等多种LLM提供了一个轻快好用的Web图形界面
+
+![img](https://github.com/shibing624/chatgpt-webui/blob/main/assets/snap.png)
 
 ## ✨ Features
 本项目基于 [ChuanhuChatGPT](https://github.com/GaiZhenbiao/ChuanhuChatGPT) 简化而来，主要改动如下：
@@ -48,10 +29,9 @@
 
 ## 支持模型
 
-| API 调用模型 | 备注 | 本地部署模型 | 备注 |
-| :---: | --- | :---: | --- |
-| [ChatGPT(GPT-4)](https://chat.openai.com) | 支持微调 gpt-3.5 | [ChatGLM](https://github.com/THUDM/ChatGLM-6B) ([ChatGLM2](https://github.com/THUDM/ChatGLM2-6B)) |
-| [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service) |  | [LLaMA](https://github.com/facebookresearch/llama) | 支持 Lora 模型 
+- [ChatGPT(GPT-4)](https://chat.openai.com) 
+- [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service)
+- [ChatGLM](https://github.com/THUDM/ChatGLM-6B)
 
 ## 使用技巧
 
@@ -87,7 +67,6 @@
 - <sup>New!</sup> 支持以 PWA应用程序 安装，体验更加原生！
 
 ### 👨‍💻 极客功能
-- <sup>New!</sup> 支持 Fine-tune（微调）gpt-3.5！
 - 大量 LLM 参数可调；
 - 支持更换 api-host；
 - 支持自定义代理；
@@ -114,7 +93,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-一个浏览器窗口将会自动打开，此时您将可以使用 **川虎Chat** 与ChatGPT或其他模型进行对话。
+一个浏览器窗口将会自动打开，可以与ChatGPT或其他模型进行对话。
 
 > **Note**
 >

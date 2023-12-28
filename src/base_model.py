@@ -20,8 +20,15 @@ from src.presets import (
     NO_INPUT_MSG,
     HISTORY_DIR
 )
-from src.utils import i18n, construct_assistant, construct_user, save_file, hide_middle_chars, count_token, \
+from src.utils import (
+    i18n,
+    construct_assistant,
+    construct_user,
+    save_file,
+    hide_middle_chars,
+    count_token,
     get_history_filepath
+)
 
 
 class ModelType(Enum):
