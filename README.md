@@ -2,7 +2,7 @@
 
 <div align="center">
   <a href="https://github.com/shibing624/chatgpt-webui">
-    <img src="https://github.com/shibing624/chatgpt-webui/blob/main/asserts/icon.png" height="100" alt="Logo">
+    <img src="https://github.com/shibing624/chatgpt-webui/blob/main/assets/icon.png" height="100" alt="Logo">
   </a>
 </div>
 
