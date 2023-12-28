@@ -1,20 +1,82 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
+"""
+@author:XuMing(xuming624@qq.com)
+@description:
+"""
+import gradio as gr
+from loguru import logger
 
-from modules import config
-from modules.config import *
-from modules.models.models import get_model
-from modules.overwrites import *
-
-logging.getLogger("httpx").setLevel(logging.WARNING)
+from src.config import my_api_key, multi_api_key, server_name, server_port, share, config_file, api_host
+from src.models import get_model
+from src.overwrites import postprocess, postprocess_chat_messages, reload_javascript
+from src.presets import (
+    custom_css_path,
+    MODELS,
+    small_and_beautiful_theme,
+    CONCURRENT_COUNT,
+    CHUANHU_TITLE,
+    HIDE_MY_KEY,
+    DEFAULT_MODEL,
+    REPLY_LANGUAGES,
+    INITIAL_SYSTEM_PROMPT,
+    ENABLE_STREAMING_OPTION,
+    CHUANHU_DESCRIPTION,
+    favicon_path,
+    API_HOST,
+)
+from src.utils import (
+    get_geoip,
+    get_html,
+    get_template_names,
+    load_template,
+    get_history_names,
+    reset,
+    predict,
+    interrupt,
+    retry,
+    i18n,
+    dislike,
+    toggle_like_btn_visibility,
+    handle_file_upload,
+    handle_summarize_index,
+    set_key,
+    set_single_turn,
+    hide_middle_chars,
+    set_system_prompt,
+    start_outputing,
+    set_token_upper_limit,
+    set_temperature,
+    set_user_identifier,
+    set_top_p,
+    delete_first_conversation,
+    delete_last_conversation,
+    set_n_choices,
+    set_logit_bias,
+    load_chat_history,
+    end_outputing,
+    set_max_tokens,
+    reset_default,
+    reset_textbox,
+    change_api_host, change_proxy,
+    set_stop_sequence,
+    set_presence_penalty, set_frequency_penalty,
+    upload_chat_history,
+    export_markdown,
+    billing_info,
+    get_template_content,
+    like,
+    save_chat_history,
+    transfer_input,
+)
 
 gr.Chatbot._postprocess_chat_messages = postprocess_chat_messages
 gr.Chatbot.postprocess = postprocess
 
-with open("assets/custom.css", "r", encoding="utf-8") as f:
+with open(custom_css_path, "r", encoding="utf-8") as f:
     customCSS = f.read()
 
 
-def create_new_model():
+def get_current_model():
     return get_model(model_name=MODELS[DEFAULT_MODEL], access_key=my_api_key)[0]
 
 
@@ -24,7 +86,7 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
     user_question = gr.State("")
     assert type(my_api_key) == str
     user_api_key = gr.State(my_api_key)
-    current_model = gr.State(create_new_model)
+    current_model = gr.State(get_current_model)
 
     topic = gr.State(i18n("未命名对话历史记录"))
 
@@ -60,7 +122,7 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
                     with gr.Column(min_width=20, scale=1):
                         dislikeBtn = gr.Button(i18n("👎"))
 
-        with gr.Column(visible=False):
+        with gr.Column(visible=True):
             with gr.Column(min_width=50, scale=1):
                 with gr.Tab(label=i18n("模型")):
                     keyTxt = gr.Textbox(
@@ -68,7 +130,7 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
                         placeholder=f"Your API-key...",
                         value=hide_middle_chars(user_api_key.value),
                         type="password",
-                        visible=HIDE_MY_KEY,
+                        visible=not HIDE_MY_KEY,
                         label="API-Key",
                     )
                     if multi_api_key:
@@ -79,7 +141,7 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
                                                elem_classes="insert_block")
                     model_select_dropdown = gr.Dropdown(
                         label=i18n("选择模型"), choices=MODELS, multiselect=False, value=MODELS[DEFAULT_MODEL],
-                        interactive=True, visible=False
+                        interactive=True, visible=True
                     )
                     lora_select_dropdown = gr.Dropdown(
                         label=i18n("选择LoRA模型"), choices=[], multiselect=False, interactive=True, visible=False
@@ -95,11 +157,7 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
                         visible=False,
                     )
                     index_files = gr.Files(label=i18n("上传"), type="file", visible=False)
-                    two_column = gr.Checkbox(label=i18n("双栏pdf"), value=advance_docs["pdf"].get("two_column", False),
-                                             visible=False)
                     summarize_btn = gr.Button(i18n("总结"), visible=False)
-                    # TODO: 公式ocr
-                    # formula_ocr = gr.Checkbox(label=i18n("识别公式"), value=advance_docs["pdf"].get("formula_ocr", False))
 
                 with gr.Tab(label="Prompt"):
                     systemPromptTxt = gr.Textbox(
@@ -251,7 +309,7 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
                             show_label=True,
                             placeholder=i18n("在这里输入API-Host..."),
                             label="API-Host",
-                            value=config.api_host or shared.API_HOST,
+                            value=api_host or API_HOST,
                             lines=1,
                         )
                         changeAPIURLBtn = gr.Button(i18n("🔄 切换API地址"))
@@ -266,19 +324,18 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
                         default_btn = gr.Button(i18n("🔙 恢复默认设置"))
 
     gr.Markdown(CHUANHU_DESCRIPTION, elem_id="description")
-    gr.HTML(get_html("footer.html").format(versions=versions_html()), elem_id="footer")
 
 
     # https://github.com/gradio-app/gradio/pull/3296
     def create_greeting(request: gr.Request):
         if hasattr(request, "username") and request.username:  # is not None or is not ""
-            logging.info(f"Get User Name: {request.username}")
+            logger.info(f"Get User Name: {request.username}")
             user_info, user_name = gr.Markdown.update(value=f"User: {request.username}"), request.username
         else:
-            user_info, user_name = gr.Markdown.update(value=f"", visible=False), ""
+            user_info, user_name = gr.Markdown.update(value=f"", visible=True), ""
         current_model = get_model(model_name=MODELS[DEFAULT_MODEL], access_key=my_api_key)[0]
         current_model.set_user_identifier(user_name)
-        chatbot = gr.Chatbot.update(label='gpt-4')
+        chatbot = gr.Chatbot.update(label=MODELS[DEFAULT_MODEL])
         return user_info, user_name, current_model, toggle_like_btn_visibility(
             DEFAULT_MODEL), *current_model.auto_load(), get_history_names(False, user_name), chatbot
 
@@ -394,8 +451,6 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
         show_progress=False
     )
 
-    two_column.change(update_doc_config, [two_column], None)
-
     # LLM Models
     keyTxt.change(set_key, [current_model, keyTxt], [user_api_key, status_display], api_name="set_key").then(
         **get_usage_args)
@@ -404,14 +459,10 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
     model_select_dropdown.change(get_model,
                                  [model_select_dropdown, lora_select_dropdown, user_api_key, temperature_slider,
                                   top_p_slider, systemPromptTxt, user_name],
-                                 [current_model, status_display, chatbot, lora_select_dropdown], show_progress=True,
+                                 [current_model, status_display], show_progress=True,
                                  api_name="get_model")
     model_select_dropdown.change(toggle_like_btn_visibility, [model_select_dropdown], [like_dislike_area],
                                  show_progress=False)
-    lora_select_dropdown.change(get_model,
-                                [model_select_dropdown, lora_select_dropdown, user_api_key, temperature_slider,
-                                 top_p_slider, systemPromptTxt, user_name], [current_model, status_display, chatbot],
-                                show_progress=True)
 
     # Template
     systemPromptTxt.change(set_system_prompt, [current_model, systemPromptTxt], None)
@@ -476,20 +527,14 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
         show_progress=True,
     )
 
-logging.info(
-    colorama.Back.GREEN
-    + "\n温馨提示：访问 http://localhost:7860 查看界面"
-    + colorama.Style.RESET_ALL
-)
-# 默认开启本地服务器，默认可以直接从IP访问，默认不创建公开分享链接
 demo.title = i18n("ChatGPT 🚀")
 
 if __name__ == "__main__":
     reload_javascript()
     demo.queue(concurrency_count=CONCURRENT_COUNT).launch(
-        server_name="127.0.0.1",
-        server_port=8009,
-        share=False,
-        blocked_paths=["config.json"],
-        favicon_path="./assets/favicon.ico"
+        server_name=server_name,
+        server_port=server_port,
+        share=share,
+        blocked_paths=[config_file],
+        favicon_path=favicon_path,
     )

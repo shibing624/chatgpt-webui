@@ -2,4 +2,4 @@
 echo Opening ChuanhuChatGPT...
 
 REM Open powershell via bat
-start powershell.exe -NoExit -Command "python ./ChuanhuChatbot.py"
+start powershell.exe -NoExit -Command "python ./main.py"

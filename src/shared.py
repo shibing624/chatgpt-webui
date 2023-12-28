@@ -1,10 +1,10 @@
-from modules.presets import COMPLETION_URL, BALANCE_API_URL, USAGE_API_URL, API_HOST
 import os
 import queue
 
+from src.presets import COMPLETION_URL, BALANCE_API_URL, USAGE_API_URL, API_HOST
+
 
 class State:
-    # import openai
     interrupted = False
     multi_api_key = False
     completion_url = COMPLETION_URL

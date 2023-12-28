@@ -1,125 +1,149 @@
 # -*- coding:utf-8 -*-
-from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple, Type
-import logging
+
+import csv
+import datetime
+import html
 import json
 import os
-import datetime
-import hashlib
-import csv
-import requests
 import re
-import html
-import sys
 import subprocess
+from typing import List, Union
+from typing import TYPE_CHECKING
 
 import gradio as gr
-from pypinyin import lazy_pinyin
+import pandas as pd
 import tiktoken
+from loguru import logger
 from markdown import markdown
 from pygments import highlight
-from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
-import pandas as pd
+from pygments.lexers import get_lexer_by_name
+from pypinyin import lazy_pinyin
 
-from modules.presets import *
-from . import shared
-from modules.config import retrieve_proxy, hide_history_when_not_logged_in
+from src import shared
+from src.config import retrieve_proxy, hide_history_when_not_logged_in
+from src.presets import ALREADY_CONVERTED_MARK, HISTORY_DIR, TEMPLATES_DIR, i18n
 
 if TYPE_CHECKING:
     from typing import TypedDict
 
+
     class DataframeData(TypedDict):
         headers: List[str]
-        data: List[List[str | int | bool]]
+        data: List[List[Union[str, int, bool]]]
+
 
 def predict(current_model, *args):
     iter = current_model.predict(*args)
     for i in iter:
         yield i
 
+
 def billing_info(current_model):
     return current_model.billing_info()
+
 
 def set_key(current_model, *args):
     return current_model.set_key(*args)
 
+
 def load_chat_history(current_model, *args):
     return current_model.load_chat_history(*args)
+
 
 def interrupt(current_model, *args):
     return current_model.interrupt(*args)
 
+
 def reset(current_model, *args):
     return current_model.reset(*args)
+
 
 def retry(current_model, *args):
     iter = current_model.retry(*args)
     for i in iter:
         yield i
 
+
 def delete_first_conversation(current_model, *args):
     return current_model.delete_first_conversation(*args)
+
 
 def delete_last_conversation(current_model, *args):
     return current_model.delete_last_conversation(*args)
 
+
 def set_system_prompt(current_model, *args):
     return current_model.set_system_prompt(*args)
+
 
 def save_chat_history(current_model, *args):
     return current_model.save_chat_history(*args)
 
+
 def export_markdown(current_model, *args):
     return current_model.export_markdown(*args)
 
-def load_chat_history(current_model, *args):
-    return current_model.load_chat_history(*args)
 
 def upload_chat_history(current_model, *args):
     return current_model.load_chat_history(*args)
 
+
 def set_token_upper_limit(current_model, *args):
     return current_model.set_token_upper_limit(*args)
+
 
 def set_temperature(current_model, *args):
     current_model.set_temperature(*args)
 
+
 def set_top_p(current_model, *args):
     current_model.set_top_p(*args)
+
 
 def set_n_choices(current_model, *args):
     current_model.set_n_choices(*args)
 
+
 def set_stop_sequence(current_model, *args):
     current_model.set_stop_sequence(*args)
+
 
 def set_max_tokens(current_model, *args):
     current_model.set_max_tokens(*args)
 
+
 def set_presence_penalty(current_model, *args):
     current_model.set_presence_penalty(*args)
+
 
 def set_frequency_penalty(current_model, *args):
     current_model.set_frequency_penalty(*args)
 
+
 def set_logit_bias(current_model, *args):
     current_model.set_logit_bias(*args)
+
 
 def set_user_identifier(current_model, *args):
     current_model.set_user_identifier(*args)
 
+
 def set_single_turn(current_model, *args):
     current_model.set_single_turn(*args)
+
 
 def handle_file_upload(current_model, *args):
     return current_model.handle_file_upload(*args)
 
+
 def handle_summarize_index(current_model, *args):
     return current_model.summarize_index(*args)
 
+
 def like(current_model, *args):
     return current_model.like(*args)
+
 
 def dislike(current_model, *args):
     return current_model.dislike(*args)
@@ -132,7 +156,7 @@ def count_token(message):
     return length
 
 
-def markdown_to_html_with_syntax_highlight(md_str): # deprecated
+def markdown_to_html_with_syntax_highlight(md_str):  # deprecated
     def replacer(match):
         lang = match.group(1) or "text"
         code = match.group(2)
@@ -154,7 +178,7 @@ def markdown_to_html_with_syntax_highlight(md_str): # deprecated
     return html_str
 
 
-def normalize_markdown(md_text: str) -> str: # deprecated
+def normalize_markdown(md_text: str) -> str:  # deprecated
     lines = md_text.split("\n")
     normalized_lines = []
     inside_list = False
@@ -167,7 +191,7 @@ def normalize_markdown(md_text: str) -> str: # deprecated
             normalized_lines.append(line)
         elif inside_list and line.strip() == "":
             if i < len(lines) - 1 and not re.match(
-                r"^(\d+\.|-|\*|\+)\s", lines[i + 1].strip()
+                    r"^(\d+\.|-|\*|\+)\s", lines[i + 1].strip()
             ):
                 normalized_lines.append(line)
             continue
@@ -178,7 +202,7 @@ def normalize_markdown(md_text: str) -> str: # deprecated
     return "\n".join(normalized_lines)
 
 
-def convert_mdtext(md_text): # deprecated
+def convert_mdtext(md_text):  # deprecated
     code_block_pattern = re.compile(r"```(.*?)(?:```|$)", re.DOTALL)
     inline_code_pattern = re.compile(r"`(.*?)`", re.DOTALL)
     code_blocks = code_block_pattern.findall(md_text)
@@ -201,6 +225,7 @@ def convert_mdtext(md_text): # deprecated
     output += raw
     output += ALREADY_CONVERTED_MARK
     return output
+
 
 def convert_bot_before_marked(chat_message):
     """
@@ -225,11 +250,13 @@ def convert_bot_before_marked(chat_message):
         md = f'<div class="md-message">{result}\n</div>'
         return raw + md
 
+
 def convert_user_before_marked(chat_message):
     if '<div class="user-message">' in chat_message:
         return chat_message
     else:
         return f'<div class="user-message">{escape_markdown(chat_message)}</div>'
+
 
 def escape_markdown(text):
     """
@@ -258,14 +285,14 @@ def escape_markdown(text):
     return ''.join(escape_chars.get(c, c) for c in text)
 
 
-def convert_asis(userinput): # deprecated
+def convert_asis(userinput):  # deprecated
     return (
-        f'<p style="white-space:pre-wrap;">{html.escape(userinput)}</p>'
-        + ALREADY_CONVERTED_MARK
+            f'<p style="white-space:pre-wrap;">{html.escape(userinput)}</p>'
+            + ALREADY_CONVERTED_MARK
     )
 
 
-def detect_converted_mark(userinput): # deprecated
+def detect_converted_mark(userinput):  # deprecated
     try:
         if userinput.endswith(ALREADY_CONVERTED_MARK):
             return True
@@ -275,13 +302,13 @@ def detect_converted_mark(userinput): # deprecated
         return True
 
 
-def detect_language(code): # deprecated
+def detect_language(code):  # deprecated
     if code.startswith("\n"):
         first_line = ""
     else:
         first_line = code.strip().split("\n", 1)[0]
     language = first_line.lower() if first_line else ""
-    code_without_language = code[len(first_line) :].lstrip() if first_line else code
+    code_without_language = code[len(first_line):].lstrip() if first_line else code
     return language, code_without_language
 
 
@@ -302,7 +329,7 @@ def construct_assistant(text):
 
 
 def save_file(filename, system, history, chatbot, user_name):
-    logging.debug(f"{user_name} 保存对话历史中……")
+    logger.debug(f"{user_name} 保存对话历史中……")
     os.makedirs(os.path.join(HISTORY_DIR, user_name), exist_ok=True)
     if filename.endswith(".json"):
         json_s = {"system": system, "history": history, "chatbot": chatbot}
@@ -318,7 +345,7 @@ def save_file(filename, system, history, chatbot, user_name):
             md_s += f"\n{data['role']}: \n- {data['content']} \n"
         with open(os.path.join(HISTORY_DIR, user_name, filename), "w", encoding="utf8") as f:
             f.write(md_s)
-    logging.debug(f"{user_name} 保存对话历史完毕")
+    logger.debug(f"{user_name} 保存对话历史完毕")
     return os.path.join(HISTORY_DIR, user_name, filename)
 
 
@@ -327,7 +354,7 @@ def sorted_by_pinyin(list):
 
 
 def get_file_names(dir, plain=False, filetypes=[".json"]):
-    logging.debug(f"获取文件名列表，目录为{dir}，文件类型为{filetypes}，是否为纯文本列表{plain}")
+    logger.debug(f"获取文件名列表，目录为{dir}，文件类型为{filetypes}，是否为纯文本列表{plain}")
     files = []
     try:
         for type in filetypes:
@@ -337,7 +364,7 @@ def get_file_names(dir, plain=False, filetypes=[".json"]):
     files = sorted_by_pinyin(files)
     if files == []:
         files = [""]
-    logging.debug(f"files are:{files}")
+    logger.debug(f"files are:{files}")
     if plain:
         return files
     else:
@@ -345,7 +372,7 @@ def get_file_names(dir, plain=False, filetypes=[".json"]):
 
 
 def get_history_names(plain=False, user_name=""):
-    logging.debug(f"从用户 {user_name} 中获取历史记录文件名列表")
+    logger.debug(f"从用户 {user_name} 中获取历史记录文件名列表")
     if user_name == "" and hide_history_when_not_logged_in:
         return ""
     else:
@@ -353,7 +380,7 @@ def get_history_names(plain=False, user_name=""):
 
 
 def load_template(filename, mode=0):
-    logging.debug(f"加载模板文件{filename}，模式为{mode}（0为返回字典和下拉菜单，1为返回下拉菜单，2为返回字典）")
+    logger.debug(f"加载模板文件{filename}，模式为{mode}（0为返回字典和下拉菜单，1为返回下拉菜单，2为返回字典）")
     lines = []
     if filename.endswith(".json"):
         with open(os.path.join(TEMPLATES_DIR, filename), "r", encoding="utf8") as f:
@@ -361,7 +388,7 @@ def load_template(filename, mode=0):
         lines = [[i["act"], i["prompt"]] for i in lines]
     else:
         with open(
-            os.path.join(TEMPLATES_DIR, filename), "r", encoding="utf8"
+                os.path.join(TEMPLATES_DIR, filename), "r", encoding="utf8"
         ) as csvfile:
             reader = csv.reader(csvfile)
             lines = list(reader)
@@ -378,12 +405,11 @@ def load_template(filename, mode=0):
 
 
 def get_template_names(plain=False):
-    logging.debug("获取模板文件名列表")
     return get_file_names(TEMPLATES_DIR, plain, filetypes=[".csv", "json"])
 
 
 def get_template_content(templates, selection, original_system_prompt):
-    logging.debug(f"应用模板中，选择为{selection}，原始系统提示为{original_system_prompt}")
+    logger.debug(f"应用模板中，选择为{selection}，原始系统提示为{original_system_prompt}")
     try:
         return templates[selection]
     except:
@@ -391,7 +417,7 @@ def get_template_content(templates, selection, original_system_prompt):
 
 
 def reset_textbox():
-    logging.debug("重置文本框")
+    logger.debug("重置文本框")
     return gr.update(value="")
 
 
@@ -404,7 +430,7 @@ def reset_default():
 def change_api_host(host):
     shared.state.set_api_host(host)
     msg = f"API-Host更改为了{host}"
-    logging.info(msg)
+    logger.info(msg)
     return msg
 
 
@@ -412,7 +438,7 @@ def change_proxy(proxy):
     retrieve_proxy(proxy)
     os.environ["HTTPS_PROXY"] = proxy
     msg = f"代理更改为了{proxy}"
-    logging.info(msg)
+    logger.info(msg)
     return msg
 
 
@@ -431,7 +457,7 @@ def hide_middle_chars(s):
 def submit_key(key):
     key = key.strip()
     msg = f"API密钥更改为了{hide_middle_chars(key)}"
-    logging.info(msg)
+    logger.info(msg)
     return key, msg
 
 
@@ -459,7 +485,7 @@ def find_n(lst, max_num):
 
 
 def start_outputing():
-    logging.debug("显示取消按钮，隐藏发送按钮")
+    logger.debug("显示取消按钮，隐藏发送按钮")
     return gr.Button.update(visible=False), gr.Button.update(visible=True)
 
 
@@ -471,7 +497,7 @@ def end_outputing():
 
 
 def cancel_outputing():
-    logging.info("中止输出……")
+    logger.info("中止输出……")
     shared.state.interrupt()
 
 
@@ -487,7 +513,6 @@ def transfer_input(inputs):
     )
 
 
-
 def run(command, desc=None, errdesc=None, custom_env=None, live=False):
     if desc is not None:
         print(desc)
@@ -499,30 +524,18 @@ def run(command, desc=None, errdesc=None, custom_env=None, live=False):
                 Error code: {result.returncode}""")
 
         return ""
-    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, env=os.environ if custom_env is None else custom_env)
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True,
+                            env=os.environ if custom_env is None else custom_env)
     if result.returncode != 0:
         message = f"""{errdesc or 'Error running command'}.
             Command: {command}
             Error code: {result.returncode}
-            stdout: {result.stdout.decode(encoding="utf8", errors="ignore") if len(result.stdout)>0 else '<empty>'}
-            stderr: {result.stderr.decode(encoding="utf8", errors="ignore") if len(result.stderr)>0 else '<empty>'}
+            stdout: {result.stdout.decode(encoding="utf8", errors="ignore") if len(result.stdout) > 0 else '<empty>'}
+            stderr: {result.stderr.decode(encoding="utf8", errors="ignore") if len(result.stderr) > 0 else '<empty>'}
             """
         raise RuntimeError(message)
     return result.stdout.decode(encoding="utf8", errors="ignore")
 
-def versions_html():
-    git = os.environ.get('GIT', "git")
-    python_version = ".".join([str(x) for x in sys.version_info[0:3]])
-    try:
-        commit_hash = run(f"{git} rev-parse HEAD").strip()
-    except Exception:
-        commit_hash = "<none>"
-    if commit_hash != "<none>":
-        short_commit = commit_hash[0:7]
-        commit_info = f"<a style=\"text-decoration:none;color:inherit\" href=\"https://github.com/GaiZhenbiao/ChuanhuChatGPT/commit/{short_commit}\">{short_commit}</a>"
-    else:
-        commit_info = "unknown \U0001F615"
-    return f""""""
 
 def get_html(filename):
     path = os.path.join(shared.chuanhu_path, "assets", "html", filename)
@@ -531,11 +544,13 @@ def get_html(filename):
             return file.read()
     return ""
 
-def add_source_numbers(lst, source_name = "Source", use_source = True):
+
+def add_source_numbers(lst, source_name="Source", use_source=True):
     if use_source:
-        return [f'[{idx+1}]\t "{item[0]}"\n{source_name}: {item[1]}' for idx, item in enumerate(lst)]
+        return [f'[{idx + 1}]\t "{item[0]}"\n{source_name}: {item[1]}' for idx, item in enumerate(lst)]
     else:
-        return [f'[{idx+1}]\t "{item}"' for idx, item in enumerate(lst)]
+        return [f'[{idx + 1}]\t "{item}"' for idx, item in enumerate(lst)]
+
 
 def add_details(lst):
     nodes = []
@@ -547,7 +562,7 @@ def add_details(lst):
     return nodes
 
 
-def sheet_to_string(sheet, sheet_name = None):
+def sheet_to_string(sheet, sheet_name=None):
     result = []
     for index, row in sheet.iterrows():
         row_string = ""
@@ -558,6 +573,7 @@ def sheet_to_string(sheet, sheet_name = None):
         result.append(row_string)
     return result
 
+
 def excel_to_string(file_path):
     # 读取Excel文件中的所有工作表
     excel_file = pd.read_excel(file_path, engine='openpyxl', sheet_name=None)
@@ -567,12 +583,11 @@ def excel_to_string(file_path):
 
     # 遍历每一个工作表
     for sheet_name, sheet_data in excel_file.items():
-
         # 处理当前工作表并添加到结果字符串
         result += sheet_to_string(sheet_data, sheet_name=sheet_name)
 
-
     return result
+
 
 def get_last_day_of_month(any_day):
     # The day 28 exists in every month. 4 days later, it's always next month
@@ -580,19 +595,23 @@ def get_last_day_of_month(any_day):
     # subtracting the number of the current day brings us back one month
     return next_month - datetime.timedelta(days=next_month.day)
 
+
 def get_model_source(model_name, alternative_source):
     if model_name == "gpt2-medium":
         return "https://huggingface.co/gpt2-medium"
 
+
 def refresh_ui_elements_on_load(current_model, selected_model_name, user_name):
     current_model.set_user_identifier(user_name)
     return toggle_like_btn_visibility(selected_model_name), *current_model.auto_load()
+
 
 def toggle_like_btn_visibility(selected_model_name):
     if selected_model_name == "xmchat":
         return gr.update(visible=True)
     else:
         return gr.update(visible=False)
+
 
 def new_auto_history_filename(dirname):
     latest_file = get_latest_filepath(dirname)
@@ -602,6 +621,7 @@ def new_auto_history_filename(dirname):
                 return latest_file
     now = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     return f'{now}.json'
+
 
 def get_latest_filepath(dirname):
     pattern = re.compile(r'\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}')
@@ -617,6 +637,7 @@ def get_latest_filepath(dirname):
                     latest_time = filetime
                     latest_file = filename
     return latest_file
+
 
 def get_history_filepath(username):
     dirname = os.path.join(HISTORY_DIR, username)

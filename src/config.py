@@ -1,68 +1,25 @@
 from collections import defaultdict
 from contextlib import contextmanager
 import os
-import logging
 import sys
 import commentjson as json
 
-from . import shared
-from . import presets
+from src import shared, presets
+from loguru import logger
+pwd_path = os.path.abspath(os.path.dirname(__file__))
 
-
-__all__ = [
-    "my_api_key",
-    "authflag",
-    "auth_list",
-    "dockerflag",
-    "retrieve_proxy",
-    "log_level",
-    "advance_docs",
-    "update_doc_config",
-    "usage_limit",
-    "multi_api_key",
-    "server_name",
-    "server_port",
-    "share",
-    "hide_history_when_not_logged_in",
-    "default_chuanhu_assistant_model"
-]
-
-# 添加一个统一的config文件，避免文件过多造成的疑惑（优先级最低）
-# 同时，也可以为后续支持自定义功能提供config的帮助
-if os.path.exists("config.json"):
-    with open("config.json", "r", encoding='utf-8') as f:
+# 添加一个统一的config文件
+config_file = os.path.join(pwd_path, "../config.json")
+config = {}
+if os.path.exists(config_file):
+    with open(config_file, "r", encoding='utf-8') as f:
         config = json.load(f)
-else:
-    config = {}
-
+if config:
+    logger.info(f"加载配置文件成功, config: {config}")
 lang_config = config.get("language", "auto")
 language = os.environ.get("LANGUAGE", lang_config)
 
 hide_history_when_not_logged_in = config.get("hide_history_when_not_logged_in", False)
-
-if os.path.exists("api_key.txt"):
-    logging.info("检测到api_key.txt文件，正在进行迁移...")
-    with open("api_key.txt", "r", encoding="utf-8") as f:
-        config["openai_api_key"] = f.read().strip()
-    os.rename("api_key.txt", "api_key(deprecated).txt")
-    with open("config.json", "w", encoding='utf-8') as f:
-        json.dump(config, f, indent=4, ensure_ascii=False)
-
-if os.path.exists("auth.json"):
-    logging.info("检测到auth.json文件，正在进行迁移...")
-    auth_list = []
-    with open("auth.json", "r", encoding='utf-8') as f:
-            auth = json.load(f)
-            for _ in auth:
-                if auth[_]["username"] and auth[_]["password"]:
-                    auth_list.append((auth[_]["username"], auth[_]["password"]))
-                else:
-                    logging.error("请检查auth.json文件中的用户名和密码！")
-                    sys.exit(1)
-    config["users"] = auth_list
-    os.rename("auth.json", "auth(deprecated).json")
-    with open("config.json", "w", encoding='utf-8') as f:
-        json.dump(config, f, indent=4, ensure_ascii=False)
 
 ## 处理docker if we are running in Docker
 dockerflag = config.get("dockerflag", False)
@@ -71,7 +28,7 @@ if os.environ.get("dockerrun") == "yes":
 
 ## 处理 api-key 以及 允许的用户列表
 my_api_key = config.get("openai_api_key", "")
-my_api_key = os.environ.get("OPENAI_API_KEY", my_api_key)
+my_api_key = my_api_key or os.environ.get("OPENAI_API_KEY", "")
 
 xmchat_api_key = config.get("xmchat_api_key", "")
 os.environ["XMCHAT_API_KEY"] = xmchat_api_key
@@ -89,7 +46,7 @@ multi_api_key = config.get("multi_api_key", False) # 是否开启多账户机制
 if multi_api_key:
     api_key_list = config.get("api_key_list", [])
     if len(api_key_list) == 0:
-        logging.error("多账号模式已开启，但api_key_list为空，请检查config.json")
+        logger.error("多账号模式已开启，但api_key_list为空，请检查config.json")
         sys.exit(1)
     shared.state.set_api_key_queue(api_key_list)
 
@@ -102,9 +59,6 @@ if api_host is not None:
     shared.state.set_api_host(api_host)
 
 default_chuanhu_assistant_model = config.get("default_chuanhu_assistant_model", "gpt-3.5-turbo")
-for x in ["GOOGLE_CSE_ID", "GOOGLE_API_KEY", "WOLFRAM_ALPHA_APPID", "SERPAPI_API_KEY"]:
-    if config.get(x, None) is not None:
-        os.environ[x] = config[x]
 
 @contextmanager
 def retrieve_openai_api(api_key = None):
@@ -116,13 +70,6 @@ def retrieve_openai_api(api_key = None):
         os.environ["OPENAI_API_KEY"] = api_key
         yield api_key
     os.environ["OPENAI_API_KEY"] = old_api_key
-
-## 处理log
-log_level = config.get("log_level", "INFO")
-logging.basicConfig(
-    level=log_level,
-    format="%(asctime)s [%(levelname)s] [%(filename)s:%(lineno)d] %(message)s",
-)
 
 ## 处理代理：
 http_proxy = config.get("http_proxy", "")
@@ -160,11 +107,6 @@ def retrieve_proxy(proxy=None):
 ## 处理advance docs
 advance_docs = defaultdict(lambda: defaultdict(dict))
 advance_docs.update(config.get("advance_docs", {}))
-def update_doc_config(two_column_pdf):
-    global advance_docs
-    advance_docs["pdf"]["two_column"] = two_column_pdf
-
-    logging.info(f"更新后的文件参数为：{advance_docs}")
 
 ## 处理gradio.launch参数
 server_name = config.get("server_name", None)

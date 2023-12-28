@@ -5,15 +5,15 @@
 
 <h1 align="center">川虎 Chat 🐯 Chuanhu Chat</h1>
 <div align="center">
-  <a href="https://github.com/GaiZhenBiao/ChuanhuChatGPT">
+  <a href="https://github.com/shibing624/chatgpt-webui">
     <img src="https://user-images.githubusercontent.com/70903329/227087087-93b37d64-7dc3-4738-a518-c1cf05591c8a.png" alt="Logo" height="156">
   </a>
 
 <p align="center">
     <h3>Lightweight and User-friendly Web-UI for LLMs including ChatGPT/ChatGLM/LLaMA</h3>
     <p align="center">
-      <a href="https://github.com/GaiZhenbiao/ChuanhuChatGPT/blob/main/LICENSE">
-        <img alt="Tests Passing" src="https://img.shields.io/github/license/GaiZhenbiao/ChuanhuChatGPT" />
+      <a href="https://github.com/shibing624/chatgpt-webui/blob/main/LICENSE">
+        <img alt="Tests Passing" src="https://img.shields.io/github/license/shibing624/chatgpt-webui" />
       </a>
       <a href="https://gradio.app/">
         <img alt="GitHub Contributors" src="https://img.shields.io/badge/Base-Gradio-fb7d1a?style=flat" />
@@ -58,7 +58,7 @@
 ## Installation
 
 ```shell
-git clone https://github.com/GaiZhenbiao/ChuanhuChatGPT.git
+git clone https://github.com/shibing624/chatgpt-webui.git
 cd ChuanhuChatGPT
 pip install -r requirements.txt
 ```
@@ -66,14 +66,14 @@ pip install -r requirements.txt
 Then make a copy of `config_example.json`, rename it to `config.json`, and then fill in your API-Key and other settings in the file.
 
 ```shell
-python ChuanhuChatbot.py
+python main.py
 ```
 
 A browser window will open and you will be able to chat with ChatGPT.
 
 > **Note**
 >
-> Please check our [wiki page](https://github.com/GaiZhenbiao/ChuanhuChatGPT/wiki/使用教程) for detailed instructions.
+> Please check our [wiki page](https://github.com/shibing624/chatgpt-webui/wiki/使用教程) for detailed instructions.
 
 ## Troubleshooting
 
@@ -81,7 +81,7 @@ When you encounter problems, you should try manually pulling the latest changes 
 
 1. Download the latest code archive by clicking on `Download ZIP` on the webpage, or
    ```shell
-   git pull https://github.com/GaiZhenbiao/ChuanhuChatGPT.git main -f
+   git pull https://github.com/shibing624/chatgpt-webui.git main -f
    ```
 2. Try installing the dependencies again (as this project may have introduced new dependencies)
    ```
@@ -94,34 +94,16 @@ When you encounter problems, you should try manually pulling the latest changes 
 
 Generally, you can solve most problems by following these steps.
 
-If the problem still exists, please refer to this page: [Frequently Asked Questions (FAQ)](https://github.com/GaiZhenbiao/ChuanhuChatGPT/wiki/常见问题)
+If the problem still exists, please refer to this page: [Frequently Asked Questions (FAQ)](https://github.com/shibing624/chatgpt-webui/wiki/常见问题)
 
 This page lists almost all the possible problems and solutions. Please read it carefully.
 
 ## More Information
 
-More information could be found in our [wiki](https://github.com/GaiZhenbiao/ChuanhuChatGPT/wiki):
+More information could be found in our [wiki](https://github.com/shibing624/chatgpt-webui/wiki):
 
-- [How to contribute a translation](https://github.com/GaiZhenbiao/ChuanhuChatGPT/wiki/Localization)
-- [How to make a contribution](https://github.com/GaiZhenbiao/ChuanhuChatGPT/wiki/贡献指南)
-- [How to cite the project](https://github.com/GaiZhenbiao/ChuanhuChatGPT/wiki/使用许可#如何引用该项目)
-- [Project changelog](https://github.com/GaiZhenbiao/ChuanhuChatGPT/wiki/更新日志)
-- [Project license](https://github.com/GaiZhenbiao/ChuanhuChatGPT/wiki/使用许可)
-
-## Starchart
-
-[![Star History Chart](https://api.star-history.com/svg?repos=GaiZhenbiao/ChuanhuChatGPT&type=Date)](https://star-history.com/#GaiZhenbiao/ChuanhuChatGPT&Date)
-
-## Contributors
-
-<a href="https://github.com/GaiZhenbiao/ChuanhuChatGPT/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=GaiZhenbiao/ChuanhuChatGPT" />
-</a>
-
-## Sponsor
-
-🐯 If you find this project helpful, feel free to buy me a coke or a cup of coffee~
-
-<a href="https://www.buymeacoffee.com/ChuanhuChat" ><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=ChuanhuChat&button_colour=219d53&font_colour=ffffff&font_family=Poppins&outline_colour=ffffff&coffee_colour=FFDD00" alt="Buy Me A Coffee" width="250"></a>
-
-<img width="250" alt="image" src="https://user-images.githubusercontent.com/51039745/226920291-e8ec0b0a-400f-4c20-ac13-dafac0c3aeeb.JPG">
+- [How to contribute a translation](https://github.com/shibing624/chatgpt-webui/wiki/Localization)
+- [How to make a contribution](https://github.com/shibing624/chatgpt-webui/wiki/贡献指南)
+- [How to cite the project](https://github.com/shibing624/chatgpt-webui/wiki/使用许可#如何引用该项目)
+- [Project changelog](https://github.com/shibing624/chatgpt-webui/wiki/更新日志)
+- [Project license](https://github.com/shibing624/chatgpt-webui/wiki/使用许可)

@@ -12,7 +12,7 @@ pwd
 
 if ! git status -uno | grep 'up to date' > /dev/null; then
 	# 如果有更新，关闭当前运行的服务器
-	pkill -f ChuanhuChatbot.py
+	pkill -f main.py
 
 	# 拉取最新更改
 	git pull
@@ -21,11 +21,11 @@ if ! git status -uno | grep 'up to date' > /dev/null; then
 	pip3 install -r requirements.txt
 
 	# 重新启动服务器
-	nohup python3 ChuanhuChatbot.py &
+	nohup python3 main.py &
 fi
 
-# 检查ChuanhuChatbot.py是否在运行
-if ! pgrep -f ChuanhuChatbot.py > /dev/null; then
+# 检查main.py是否在运行
+if ! pgrep -f main.py > /dev/null; then
 	# 如果没有运行，启动服务器
-	nohup python3 ChuanhuChatbot.py &
+	nohup python3 main.py &
 fi

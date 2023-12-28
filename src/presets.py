@@ -1,13 +1,34 @@
 # -*- coding:utf-8 -*-
-import os
-from pathlib import Path
 
+import locale
+import os
+
+import commentjson as json
 import gradio as gr
 
-from .webui_locale import I18nAuto
+pwd_path = os.path.abspath(os.path.dirname(__file__))
+
+
+class I18nAuto:
+    def __init__(self):
+        language = os.environ.get("LANGUAGE", "auto")
+        if language == "auto":
+            language = locale.getdefaultlocale()[0]  # get the language code of the system (ex. zh_CN)
+        self.language_map = {}
+        file_path = os.path.join(pwd_path, f'../locale/{language}.json')
+        self.file_is_exists = os.path.isfile(file_path)
+        if self.file_is_exists:
+            with open(file_path, "r", encoding="utf-8") as f:
+                self.language_map.update(json.load(f))
+
+    def __call__(self, key):
+        if self.file_is_exists and key in self.language_map:
+            return self.language_map[key]
+        else:
+            return key
+
 
 i18n = I18nAuto()  # internationalization
-
 CHATGLM_MODEL = None
 CHATGLM_TOKENIZER = None
 LLAMA_MODEL = None
@@ -19,9 +40,14 @@ API_HOST = "api.openai.com"
 COMPLETION_URL = "https://api.openai.com/v1/chat/completions"
 BALANCE_API_URL = "https://api.openai.com/dashboard/billing/credit_grants"
 USAGE_API_URL = "https://api.openai.com/dashboard/billing/usage"
-HISTORY_DIR = Path("history")
-HISTORY_DIR = "history"
-TEMPLATES_DIR = "templates"
+HISTORY_DIR = os.path.join(pwd_path, '../history')
+TEMPLATES_DIR = os.path.join(pwd_path, '../templates')
+
+# assert文件
+custom_css_path = os.path.join(pwd_path, "../assets/custom.css")
+custom_js_path = os.path.join(pwd_path, "../assets/custom.js")
+external_js_path = os.path.join(pwd_path, "../assets/external-scripts.js")
+favicon_path = os.path.join(pwd_path, "../assets/favicon.ico")
 
 # 错误信息
 STANDARD_ERROR_MSG = i18n("☹️发生了错误：")  # 错误信息的标准前缀
@@ -38,19 +64,17 @@ BILLING_NOT_APPLICABLE_MSG = i18n("账单信息不适用")  # 本地运行的模
 TIMEOUT_STREAMING = 60  # 流式对话时的超时时间
 TIMEOUT_ALL = 200  # 非流式对话时的超时时间
 ENABLE_STREAMING_OPTION = True  # 是否启用选择选择是否实时显示回答的勾选框
-HIDE_MY_KEY = False  # 如果你想在UI中隐藏你的 API 密钥，将此值设置为 True
-CONCURRENT_COUNT = 10  # 允许同时使用的用户数量
+HIDE_MY_KEY = True  # 如果你想在UI中隐藏你的 API 密钥，将此值设置为 True
+CONCURRENT_COUNT = 100  # 允许同时使用的用户数量
 
 SIM_K = 5
 INDEX_QUERY_TEMPRATURE = 1.0
 
 CHUANHU_TITLE = i18n("ChatGPT 🚀")
 
-CHUANHU_DESCRIPTION = i18n(
-    "[shibing624](https://github.com/shibing624)(XuMing) 开发")
+CHUANHU_DESCRIPTION = i18n("[shibing624](https://github.com/shibing624)(XuMing) 开发")
 
 ONLINE_MODELS = [
-    "MOSS",
     "gpt-3.5-turbo",
     "gpt-3.5-turbo-16k",
     "gpt-3.5-turbo-0301",
@@ -61,43 +85,17 @@ ONLINE_MODELS = [
     "gpt-4-32k",
     "gpt-4-32k-0314",
     "gpt-4-32k-0613",
-    "川虎助理",
-    "川虎助理 Pro",
-    "xmchat",
-    "yuanai-1.0-base_10B",
-    "yuanai-1.0-translate",
-    "yuanai-1.0-dialog",
-    "yuanai-1.0-rhythm_poems",
-    "minimax-abab4-chat",
-    "minimax-abab5-chat",
 ]
 
 LOCAL_MODELS = [
     "chatglm-6b",
-    "chatglm-6b-int4",
-    "chatglm-6b-int4-qe",
-    "StableLM",
-    "MOSS",
-    "llama-7b-hf",
-    "llama-13b-hf",
-    "llama-30b-hf",
-    "llama-65b-hf",
 ]
 
-if os.environ.get('HIDE_LOCAL_MODELS', 'false') == 'true':
-    MODELS = ONLINE_MODELS
-else:
-    MODELS = ONLINE_MODELS + LOCAL_MODELS
+MODELS = ONLINE_MODELS + LOCAL_MODELS
 
 DEFAULT_MODEL = 0
 
-os.makedirs("models", exist_ok=True)
-os.makedirs("lora", exist_ok=True)
-os.makedirs("history", exist_ok=True)
-for dir_name in os.listdir("models"):
-    if os.path.isdir(os.path.join("models", dir_name)):
-        if dir_name not in MODELS:
-            MODELS.append(dir_name)
+os.makedirs(HISTORY_DIR, exist_ok=True)
 
 MODEL_TOKEN_LIMIT = {
     "gpt-3.5-turbo": 4096,
@@ -126,50 +124,6 @@ REPLY_LANGUAGES = [
     "Deutsch",
     "跟随问题语言（不稳定）"
 ]
-
-WEBSEARCH_PTOMPT_TEMPLATE = """\
-Web search results:
-
-{web_results}
-Current date: {current_date}
-
-Instructions: Using the provided web search results, write a comprehensive reply to the given query. Make sure to cite results using [[number](URL)] notation after the reference. If the provided search results refer to multiple subjects with the same name, write separate answers for each subject.
-Query: {query}
-Reply in {reply_language}
-"""
-
-PROMPT_TEMPLATE = """\
-Context information is below.
----------------------
-{context_str}
----------------------
-Current date: {current_date}.
-Using the provided context information, write a comprehensive reply to the given query.
-Make sure to cite results using [number] notation after the reference.
-If the provided context information refer to multiple subjects with the same name, write separate answers for each subject.
-Use prior knowledge only if the given context didn't provide enough information.
-Answer the question: {query_str}
-Reply in {reply_language}
-"""
-
-REFINE_TEMPLATE = """\
-The original question is as follows: {query_str}
-We have provided an existing answer: {existing_answer}
-We have the opportunity to refine the existing answer
-(only if needed) with some more context below.
-------------
-{context_msg}
-------------
-Given the new context, refine the original answer to better
-Reply in {reply_language}
-If the context isn't useful, return the original answer.
-"""
-
-SUMMARIZE_PROMPT = """Write a concise summary of the following:
-
-{text}
-
-CONCISE SUMMARY IN 中文:"""
 
 ALREADY_CONVERTED_MARK = "<!-- ALREADY CONVERTED BY PARSER. -->"
 
