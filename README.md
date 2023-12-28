@@ -2,7 +2,7 @@
 
 <div align="center">
   <a href="https://github.com/shibing624/chatgpt-webui">
-    <img src="https://github.com/shibing624/chatgpt-webui/blob/main/assert/icon.png" height="100" alt="Logo">
+    <img src="https://github.com/shibing624/chatgpt-webui/blob/main/asserts/icon.png" height="100" alt="Logo">
   </a>
 </div>
 
@@ -22,8 +22,8 @@
 ## ✨ Features
 本项目基于 [ChuanhuChatGPT](https://github.com/GaiZhenbiao/ChuanhuChatGPT) 简化而来，主要改动如下：
 1. 简化了WebUI页面，只保留ChatGPT的对话功能，去除了文档问答、在线搜索等功能；
-2. 整体代码重构了，规范python语法；
-3. 代码结构更加清晰，更加易于理解，方便新增自定义功能；
+2. 重构了代码逻辑和结构，规范python语法，轻量化项目依赖库；
+3. 保留本地大语言模型对话，方便扩展本地模型；
 4. 支持nginx反向代理，静态文件使用相对路径，方便部署。
 
 
@@ -95,9 +95,6 @@ python main.py
 
 一个浏览器窗口将会自动打开，可以与ChatGPT或其他模型进行对话。
 
-> **Note**
->
-> 具体详尽的安装教程和使用教程请查看[本项目的wiki页面](https://github.com/shibing624/chatgpt-webui/wiki/使用教程)。
 
 ## 疑难杂症解决
 
