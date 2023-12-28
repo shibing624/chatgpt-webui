@@ -77,22 +77,24 @@ CHUANHU_DESCRIPTION = i18n("develop by [shibing624](https://github.com/shibing62
 
 ONLINE_MODELS = [
     "gpt-3.5-turbo",
+    "gpt-3.5-turbo-instruct",
     "gpt-3.5-turbo-16k",
     "gpt-3.5-turbo-0301",
     "gpt-3.5-turbo-0613",
+    "gpt-3.5-turbo-1106",
     "gpt-4",
-    "gpt-4-0314",
-    "gpt-4-0613",
     "gpt-4-32k",
-    "gpt-4-32k-0314",
-    "gpt-4-32k-0613",
+    "gpt-4-1106-preview",
+    "gpt-4-vision-preview",
 ]
 
 LOCAL_MODELS = [
     "chatglm-6b",
 ]
 
-MODELS = ONLINE_MODELS #+ LOCAL_MODELS
+MODELS = ONLINE_MODELS + LOCAL_MODELS
+if os.environ.get('HIDE_LOCAL_MODELS', 'false') == 'true':
+    MODELS = ONLINE_MODELS
 
 DEFAULT_MODEL = 0
 
@@ -100,15 +102,15 @@ os.makedirs(HISTORY_DIR, exist_ok=True)
 
 MODEL_TOKEN_LIMIT = {
     "gpt-3.5-turbo": 4096,
+    "gpt-3.5-turbo-instruct": 4096,
     "gpt-3.5-turbo-16k": 16384,
     "gpt-3.5-turbo-0301": 4096,
     "gpt-3.5-turbo-0613": 4096,
+    "gpt-3.5-turbo-1106": 16384,
     "gpt-4": 8192,
-    "gpt-4-0314": 8192,
-    "gpt-4-0613": 8192,
     "gpt-4-32k": 32768,
-    "gpt-4-32k-0314": 32768,
-    "gpt-4-32k-0613": 32768
+    "gpt-4-1106-preview": 128000,
+    "gpt-4-vision-preview": 128000,
 }
 
 TOKEN_OFFSET = 1000  # 模型的token上限减去这个值，得到软上限。到达软上限之后，自动尝试减少token占用。
