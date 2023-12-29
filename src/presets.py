@@ -77,7 +77,6 @@ CHUANHU_DESCRIPTION = i18n("develop by [shibing624](https://github.com/shibing62
 
 ONLINE_MODELS = [
     "gpt-3.5-turbo",
-    "gpt-3.5-turbo-instruct",
     "gpt-3.5-turbo-16k",
     "gpt-3.5-turbo-0301",
     "gpt-3.5-turbo-0613",
@@ -102,7 +101,6 @@ os.makedirs(HISTORY_DIR, exist_ok=True)
 
 MODEL_TOKEN_LIMIT = {
     "gpt-3.5-turbo": 4096,
-    "gpt-3.5-turbo-instruct": 4096,
     "gpt-3.5-turbo-16k": 16384,
     "gpt-3.5-turbo-0301": 4096,
     "gpt-3.5-turbo-0613": 4096,
