@@ -3,12 +3,19 @@
     // 若缺省填为 "openai_api_key": "" 则必须再在图形界面中填入API Key
     "openai_api_key": "sk-3AmBmgGILenGk3N2514a7e3004354870Ac1aE0A45a1a7e64",
     "openai_api_base": "https://apejhvxcd.cloud.sealos.io",
-    "language": "auto",
     // 如果使用代理，请取消注释下面的两行，并替换代理URL
     // "https_proxy": "http://127.0.0.1:1079",
     // "http_proxy": "http://127.0.0.1:1079",
-    "users": [], // 用户列表，[[用户名1, 密码1], [用户名2, 密码2], ...]
     "default_model": "gpt-3.5-turbo", // 默认模型
+
+    //== 基础配置 ==
+    "language": "auto", // 界面语言，可选"auto", "en_US", "ja_JP"
+    "users": [], // 用户列表，[[用户名1, 密码1], [用户名2, 密码2], ...]
+    "hide_history_when_not_logged_in": false, //未登录情况下是否不展示对话历史
+    "chat_name_method_index": 2, // 选择对话名称的方法。0: 使用日期时间命名；1: 使用第一条提问命名，2: 使用模型自动总结
+    "bot_avatar": "default", // 机器人头像，可填写本地或网络图片链接，或者"none"（不显示头像）
+    "user_avatar": "default", // 用户头像，可填写本地或网络图片链接，或者"none"（不显示头像）
+
     // 是否多个API Key轮换使用
     "multi_api_key": false,
     "api_key_list": [
