@@ -769,18 +769,13 @@ def get_corresponding_file_type_by_model_name(selected_model_name):
         return [".pdf", ".docx", ".pptx", ".epub", ".xlsx", ".txt", "text"]
 
 
-# def toggle_file_type(selected_model_name):
-#     return gr.Files.update(file_types=get_corresponding_file_type_by_model_name(selected_model_name))
-
-
 def new_auto_history_filename(username):
     latest_file = get_first_history_name(username)
     if latest_file:
-        with open(
-                os.path.join(HISTORY_DIR, username, latest_file + ".json"),
-                "r",
-                encoding="utf-8",
-        ) as f:
+        with open(os.path.join(HISTORY_DIR, username, latest_file + ".json"),
+                  "r",
+                  encoding="utf-8",
+                  ) as f:
             if len(f.read()) == 0:
                 return latest_file
     now = i18n("新对话 ") + datetime.datetime.now().strftime("%m-%d %H-%M")
@@ -800,13 +795,9 @@ def get_history_filepath(username):
 
 def beautify_err_msg(err_msg):
     if "insufficient_quota" in err_msg:
-        return i18n(
-            "剩余配额不足，[进一步了解](https://github.com/GaiZhenbiao/ChuanhuChatGPT/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98#you-exceeded-your-current-quota-please-check-your-plan-and-billing-details)"
-        )
+        return i18n("剩余配额不足")
     if "The model `gpt-4` does not exist" in err_msg:
-        return i18n(
-            "你没有权限访问 GPT4，[进一步了解](https://github.com/GaiZhenbiao/ChuanhuChatGPT/issues/843)"
-        )
+        return i18n("你没有权限访问 GPT4")
     if "Resource not found" in err_msg:
         return i18n("请查看 config_example.json，配置 Azure OpenAI")
     return err_msg
@@ -814,7 +805,7 @@ def beautify_err_msg(err_msg):
 
 def auth_from_conf(username, password):
     try:
-        with open("config.json", encoding="utf-8") as f:
+        with open(config_file, encoding="utf-8") as f:
             conf = json.load(f)
         usernames, passwords = [i[0] for i in conf["users"]], [
             i[1] for i in conf["users"]
@@ -915,26 +906,17 @@ class SetupWizard:
         else:
             print(
                 "你没有输入有效的语言代码，将使用默认语言中文(zh_CN)\nYou did not enter a valid language code, the default language Chinese(zh_CN) will be used.")
-        print(
-            i18n("正在进行首次设置，请按照提示进行配置，配置将会被保存在")
-            + colorama.Fore.GREEN
-            + " config.json "
-            + colorama.Style.RESET_ALL
-            + i18n("中。")
-        )
+        print(i18n("正在进行首次设置，请按照提示进行配置，配置将会被保存在")
+              + " config.json "
+              + i18n("中。")
+              )
         print(
             i18n("在")
-            + colorama.Fore.YELLOW
             + " example_config.json "
-            + colorama.Style.RESET_ALL
             + i18n("中，包含了可用设置项及其简要说明。")
-            + colorama.Style.RESET_ALL
         )
-        print(
-            colorama.Back.GREEN
-            + i18n("现在开始进行交互式配置。碰到不知道该怎么办的设置项时，请直接按回车键跳过，程序会自动选择合适的默认值。")
-            + colorama.Style.RESET_ALL
-        )
+        print(i18n("现在开始进行交互式配置。碰到不知道该怎么办的设置项时，请直接按回车键跳过，程序会自动选择合适的默认值。")
+              )
 
     def set(self, config_items: List[ConfigItem], prompt: str):
         """Ask for a settings key

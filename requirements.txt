@@ -8,3 +8,4 @@ Pygments
 markdown
 pandas
 commentjson
+jinja2

@@ -502,8 +502,7 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
 
 
     def create_greeting(request: gr.Request):
-        logger.debug(f"request: {request}")
-        if hasattr(request, "username") and request.username:  # is not None or is not ""
+        if hasattr(request, "username") and request.username:
             logger.info(f"Get User Name: {request.username}")
             user_info, user_name = gr.Markdown.update(
                 value=f"User: {request.username}"), request.username
