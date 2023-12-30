@@ -37,18 +37,19 @@ LLAMA_INFERENCER = None
 # ChatGPT 设置
 INITIAL_SYSTEM_PROMPT = "You are a helpful assistant."
 API_HOST = "api.openai.com"
-COMPLETION_URL = "https://api.openai.com/v1/chat/completions"
+OPENAI_API_BASE = "https://api.openai.com/v1"
+CHAT_COMPLETION_URL = "https://api.openai.com/v1/chat/completions"
+IMAGES_COMPLETION_URL = "https://api.openai.com/v1/images/generations"
+COMPLETION_URL = "https://api.openai.com/v1/completions"
 BALANCE_API_URL = "https://api.openai.com/dashboard/billing/credit_grants"
 USAGE_API_URL = "https://api.openai.com/dashboard/billing/usage"
 HISTORY_DIR = os.path.join(pwd_path, '../history')
 TEMPLATES_DIR = os.path.join(pwd_path, '../templates')
 
 # assert文件
-custom_css_path = os.path.join(pwd_path, "../assets/custom.css")
-custom_js_path = os.path.join(pwd_path, "../assets/custom.js")
-external_js_path = os.path.join(pwd_path, "../assets/external-scripts.js")
+chuanhu_path = os.path.dirname(pwd_path)
+assets_path = os.path.join(pwd_path, "../assets")
 favicon_path = os.path.join(pwd_path, "../assets/favicon.ico")
-switcher_html_path = os.path.join(pwd_path, "../assets/html/appearance_switcher.html")
 
 # 错误信息
 STANDARD_ERROR_MSG = i18n("☹️发生了错误：")  # 错误信息的标准前缀
@@ -126,7 +127,30 @@ REPLY_LANGUAGES = [
     "跟随问题语言（不稳定）"
 ]
 
+HISTORY_NAME_METHODS = [
+    i18n("根据日期时间"),
+    i18n("第一条提问"),
+    i18n("模型自动总结（消耗tokens）"),
+]
+
+SUMMARIZE_PROMPT = """Write a concise summary of the following:
+
+{text}
+
+CONCISE SUMMARY IN 中文:"""
+
+SUMMARY_CHAT_SYSTEM_PROMPT = """\
+Please summarize the following conversation for a chat topic.
+No more than 16 characters.
+No special characters.
+Punctuation mark is banned.
+Not including '.' ':' '?' '!' '“' '*' '<' '>'.
+Reply in user's language.
+"""
+
 ALREADY_CONVERTED_MARK = "<!-- ALREADY CONVERTED BY PARSER. -->"
+START_OF_OUTPUT_MARK = "<!-- SOO IN MESSAGE -->"
+END_OF_OUTPUT_MARK = "<!-- EOO IN MESSAGE -->"
 
 small_and_beautiful_theme = gr.themes.Soft(
     primary_hue=gr.themes.Color(
@@ -192,6 +216,6 @@ small_and_beautiful_theme = gr.themes.Soft(
     block_title_background_fill_dark="*primary_900",
     block_label_background_fill_dark="*primary_900",
     input_background_fill="#F6F6F6",
-    chatbot_code_background_color="*neutral_950",
+    # chatbot_code_background_color="*neutral_950",
     chatbot_code_background_color_dark="*neutral_950",
 )

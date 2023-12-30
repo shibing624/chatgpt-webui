@@ -2,7 +2,7 @@
     "openai_api_key": "sk-3AmBmgGILenGk3N2514a7e3004354870Ac1aE0A45a1a7e64",
     "openai_api_base": "https://apejhvxcd.cloud.sealos.io",
     "language": "auto",
-    "default_model": "gpt-4",
+    "default_model": "gpt-3.5-turbo",
     "multi_api_key": false,
     "server_name": "0.0.0.0",
     "server_port": 8009,

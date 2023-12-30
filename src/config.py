@@ -1,11 +1,13 @@
-from collections import defaultdict
-from contextlib import contextmanager
 import os
 import sys
+from collections import defaultdict
+from contextlib import contextmanager
+
 import commentjson as json
+from loguru import logger
 
 from src import shared, presets
-from loguru import logger
+
 pwd_path = os.path.abspath(os.path.dirname(__file__))
 
 # 添加一个统一的config文件
@@ -20,29 +22,28 @@ lang_config = config.get("language", "auto")
 language = os.environ.get("LANGUAGE", lang_config)
 
 hide_history_when_not_logged_in = config.get("hide_history_when_not_logged_in", False)
+show_api_billing = config.get("show_api_billing", False)
+# 选择对话名称的方法。0: 使用日期时间命名；1: 使用第一条提问命名，2: 使用模型自动总结
+chat_name_method_index = config.get("chat_name_method_index", 2)
+
+if "available_models" in config:
+    presets.MODELS = config["available_models"]
+    logger.info(f"已设置可用模型：{config['available_models']}")
 
 ## 处理docker if we are running in Docker
 dockerflag = config.get("dockerflag", False)
-if os.environ.get("dockerrun") == "yes":
-    dockerflag = True
-
 ## 处理 api-key 以及 允许的用户列表
 my_api_key = config.get("openai_api_key", "")
 my_api_key = my_api_key or os.environ.get("OPENAI_API_KEY", "")
 
 xmchat_api_key = config.get("xmchat_api_key", "")
-os.environ["XMCHAT_API_KEY"] = xmchat_api_key
-
 minimax_api_key = config.get("minimax_api_key", "")
-os.environ["MINIMAX_API_KEY"] = minimax_api_key
 minimax_group_id = config.get("minimax_group_id", "")
-os.environ["MINIMAX_GROUP_ID"] = minimax_group_id
 
-
-usage_limit = os.environ.get("USAGE_LIMIT", config.get("usage_limit", 120))
+usage_limit = config.get("usage_limit", 120)
 
 ## 多账户机制
-multi_api_key = config.get("multi_api_key", False) # 是否开启多账户机制
+multi_api_key = config.get("multi_api_key", False)  # 是否开启多账户机制
 if multi_api_key:
     api_key_list = config.get("api_key_list", [])
     if len(api_key_list) == 0:
@@ -50,26 +51,22 @@ if multi_api_key:
         sys.exit(1)
     shared.state.set_api_key_queue(api_key_list)
 
-auth_list = config.get("users", []) # 实际上是使用者的列表
+auth_list = config.get("users", [])  # 实际上是使用者的列表
 authflag = len(auth_list) > 0  # 是否开启认证的状态值，改为判断auth_list长度
 
 # 处理自定义的api_host，优先读环境变量的配置，如果存在则自动装配
-api_host = os.environ.get("OPENAI_API_BASE", config.get("openai_api_base", None))
+api_host = config.get("openai_api_base", None)
 if api_host is not None:
     shared.state.set_api_host(api_host)
 
-default_chuanhu_assistant_model = config.get("default_chuanhu_assistant_model", "gpt-3.5-turbo")
 
 @contextmanager
-def retrieve_openai_api(api_key = None):
-    old_api_key = os.environ.get("OPENAI_API_KEY", "")
+def retrieve_openai_api(api_key=None):
     if api_key is None:
-        os.environ["OPENAI_API_KEY"] = my_api_key
         yield my_api_key
     else:
-        os.environ["OPENAI_API_KEY"] = api_key
         yield api_key
-    os.environ["OPENAI_API_KEY"] = old_api_key
+
 
 ## 处理代理：
 http_proxy = config.get("http_proxy", "")
@@ -81,7 +78,8 @@ https_proxy = os.environ.get("HTTPS_PROXY", https_proxy)
 os.environ["HTTP_PROXY"] = ""
 os.environ["HTTPS_PROXY"] = ""
 
-local_embedding = config.get("local_embedding", False) # 是否使用本地embedding
+local_embedding = config.get("local_embedding", False)  # 是否使用本地embedding
+
 
 @contextmanager
 def retrieve_proxy(proxy=None):
@@ -98,15 +96,58 @@ def retrieve_proxy(proxy=None):
         old_var = os.environ["HTTP_PROXY"], os.environ["HTTPS_PROXY"]
         os.environ["HTTP_PROXY"] = http_proxy
         os.environ["HTTPS_PROXY"] = https_proxy
-        yield http_proxy, https_proxy # return new proxy
+        yield http_proxy, https_proxy  # return new proxy
 
         # return old proxy
         os.environ["HTTP_PROXY"], os.environ["HTTPS_PROXY"] = old_var
 
 
+# 处理latex options
+user_latex_option = config.get("latex_option", "default")
+if user_latex_option == "default":
+    latex_delimiters_set = [
+        {"left": "$$", "right": "$$", "display": True},
+        {"left": "$", "right": "$", "display": False},
+        {"left": "\\(", "right": "\\)", "display": False},
+        {"left": "\\[", "right": "\\]", "display": True},
+    ]
+elif user_latex_option == "strict":
+    latex_delimiters_set = [
+        {"left": "$$", "right": "$$", "display": True},
+        {"left": "\\(", "right": "\\)", "display": False},
+        {"left": "\\[", "right": "\\]", "display": True},
+    ]
+elif user_latex_option == "all":
+    latex_delimiters_set = [
+        {"left": "$$", "right": "$$", "display": True},
+        {"left": "$", "right": "$", "display": False},
+        {"left": "\\(", "right": "\\)", "display": False},
+        {"left": "\\[", "right": "\\]", "display": True},
+        {"left": "\\begin{equation}", "right": "\\end{equation}", "display": True},
+        {"left": "\\begin{align}", "right": "\\end{align}", "display": True},
+        {"left": "\\begin{alignat}", "right": "\\end{alignat}", "display": True},
+        {"left": "\\begin{gather}", "right": "\\end{gather}", "display": True},
+        {"left": "\\begin{CD}", "right": "\\end{CD}", "display": True},
+    ]
+elif user_latex_option == "disabled":
+    latex_delimiters_set = []
+else:
+    latex_delimiters_set = [
+        {"left": "$$", "right": "$$", "display": True},
+        {"left": "$", "right": "$", "display": False},
+        {"left": "\\(", "right": "\\)", "display": False},
+        {"left": "\\[", "right": "\\]", "display": True},
+    ]
+
 ## 处理advance docs
 advance_docs = defaultdict(lambda: defaultdict(dict))
 advance_docs.update(config.get("advance_docs", {}))
+
+
+def update_doc_config(two_column_pdf):
+    global advance_docs
+    advance_docs["pdf"]["two_column"] = two_column_pdf
+
 
 ## 处理gradio.launch参数
 server_name = config.get("server_name", None)
@@ -127,6 +168,18 @@ default_model = config.get("default_model", "")
 try:
     presets.DEFAULT_MODEL = presets.MODELS.index(default_model)
 except ValueError:
-    pass
+    logger.error("你填写的默认模型" + default_model + "不存在！请从下面的列表中挑一个填写：" + str(presets.MODELS))
 
 share = config.get("share", False)
+
+# avatar
+bot_avatar = config.get("bot_avatar", "default")
+user_avatar = config.get("user_avatar", "default")
+if bot_avatar == "" or bot_avatar == "none" or bot_avatar is None:
+    bot_avatar = None
+elif bot_avatar == "default":
+    bot_avatar = os.path.join(pwd_path, "../assets/chatbot.png")
+if user_avatar == "" or user_avatar == "none" or user_avatar is None:
+    user_avatar = None
+elif user_avatar == "default":
+    user_avatar = os.path.join(pwd_path, "../assets/user.png")

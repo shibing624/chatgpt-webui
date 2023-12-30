@@ -1,48 +1,30 @@
-<div align="right">
-  <!-- Language: -->
-  <a title="Chinese" href="../README.md">简体中文</a> | English | <a title="Japanese" href="README_ja.md">日本語</a>
-</div>
+[**🇨🇳中文**](https://github.com/shibing624/chatgpt-webui/blob/main/README.md) | [**🌐English**](https://github.com/shibing624/chatgpt-webui/blob/main/README_EN.md) | [**📖文档/Docs**](https://github.com/shibing624/chatgpt-webui/wiki) | [**🤖模型/Models**](https://huggingface.co/shibing624) 
 
-<h1 align="center">川虎 Chat 🐯 Chuanhu Chat</h1>
 <div align="center">
   <a href="https://github.com/shibing624/chatgpt-webui">
-    <img src="https://user-images.githubusercontent.com/70903329/227087087-93b37d64-7dc3-4738-a518-c1cf05591c8a.png" alt="Logo" height="156">
+    <img src="https://github.com/shibing624/chatgpt-webui/blob/main/assets/icon.png" height="100" alt="Logo">
   </a>
-
-<p align="center">
-    <h3>Lightweight and User-friendly Web-UI for LLMs including ChatGPT/ChatGLM/LLaMA</h3>
-    <p align="center">
-      <a href="https://github.com/shibing624/chatgpt-webui/blob/main/LICENSE">
-        <img alt="Tests Passing" src="https://img.shields.io/github/license/shibing624/chatgpt-webui" />
-      </a>
-      <a href="https://gradio.app/">
-        <img alt="GitHub Contributors" src="https://img.shields.io/badge/Base-Gradio-fb7d1a?style=flat" />
-      </a>
-      <a href="https://t.me/tkdifferent">
-        <img alt="GitHub pull requests" src="https://img.shields.io/badge/Telegram-Group-blue.svg?logo=telegram" />
-      </a>
-      <p>
-        Streaming / Unlimited conversations / Save history / Preset prompts / Chat with files / Web search <br />
-        LaTeX rendering / Table rendering / Code highlighting <br />
-        Auto dark mode / Adaptive web interface / WeChat-like theme <br />
-        Multi-parameters tuning / Multi-API-Key support / Multi-user support <br />
-        Compatible with GPT-4 / Local deployment for LLMs
-      </p>
-      <a href="https://www.youtube.com/watch?v=MtxS4XZWbJE"><strong>Video Tutorial</strong></a>
-        ·
-      <a href="https://www.youtube.com/watch?v=77nw7iimYDE"><strong>2.0 Introduction</strong></a>
-        ·
-      <a href="https://www.youtube.com/watch?v=x-O1jjBqgu4"><strong>3.0 Introduction & Tutorial</strong></a>
-	||
-      <a href="https://huggingface.co/spaces/JohnSmith9982/ChuanhuChatGPT"><strong>Online trial</strong></a>
-      	·
-      <a href="https://huggingface.co/login?next=%2Fspaces%2FJohnSmith9982%2FChuanhuChatGPT%3Fduplicate%3Dtrue"><strong>One-Click deployment</strong></a>
-    </p>
-    <p align="center">
-      <img alt="Animation Demo" src="https://user-images.githubusercontent.com/51039745/226255695-6b17ff1f-ea8d-464f-b69b-a7b6b68fffe8.gif" />
-    </p>
-  </p>
 </div>
+
+-----------------
+
+# ChatGPT WebUI: ChatGPT webui by python gradio
+[![License Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![python_version](https://img.shields.io/badge/Python-3.8%2B-green.svg)](requirements.txt)
+[![GitHub issues](https://img.shields.io/github/issues/shibing624/chatgpt-webui.svg)](https://github.com/shibing624/chatgpt-webui/issues)
+[![Wechat Group](http://vlog.sfyc.ltd/wechat_everyday/wxgroup_logo.png?imageView2/0/w/60/h/20)](#Contact)
+
+
+**chatgpt-webui**: ChatGPT webui by gradio. 为ChatGPT等多种LLM提供了一个轻快好用的Web图形界面
+
+![img](https://github.com/shibing624/chatgpt-webui/blob/main/assets/snap.png)
+
+## ✨ Features
+本项目基于 [ChuanhuChatGPT](https://github.com/GaiZhenbiao/ChuanhuChatGPT) 简化而来，主要改动如下：
+1. 简化了WebUI页面，只保留ChatGPT的对话功能，去除了文档问答、在线搜索等功能；
+2. 重构了代码逻辑和结构，规范python语法，轻量化项目依赖库；
+3. 保留本地大语言模型对话，方便扩展本地模型；
+4. 支持nginx反向代理，静态文件使用相对路径，方便部署。
 
 ## Usage Tips
 
@@ -59,7 +41,7 @@
 
 ```shell
 git clone https://github.com/shibing624/chatgpt-webui.git
-cd ChuanhuChatGPT
+cd chatgpt-webui
 pip install -r requirements.txt
 ```
 
@@ -97,13 +79,3 @@ Generally, you can solve most problems by following these steps.
 If the problem still exists, please refer to this page: [Frequently Asked Questions (FAQ)](https://github.com/shibing624/chatgpt-webui/wiki/常见问题)
 
 This page lists almost all the possible problems and solutions. Please read it carefully.
-
-## More Information
-
-More information could be found in our [wiki](https://github.com/shibing624/chatgpt-webui/wiki):
-
-- [How to contribute a translation](https://github.com/shibing624/chatgpt-webui/wiki/Localization)
-- [How to make a contribution](https://github.com/shibing624/chatgpt-webui/wiki/贡献指南)
-- [How to cite the project](https://github.com/shibing624/chatgpt-webui/wiki/使用许可#如何引用该项目)
-- [Project changelog](https://github.com/shibing624/chatgpt-webui/wiki/更新日志)
-- [Project license](https://github.com/shibing624/chatgpt-webui/wiki/使用许可)

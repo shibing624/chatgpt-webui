@@ -1,9 +1,10 @@
 import datetime
+import json
 import os
 import platform
 
 import colorama
-import json
+import gradio as gr
 import requests
 from loguru import logger
 
@@ -18,9 +19,18 @@ from src.presets import (
     READ_TIMEOUT_MSG,
     ERROR_RETRIEVE_MSG,
     GENERAL_ERROR_MSG,
-    COMPLETION_URL,
+    CHAT_COMPLETION_URL,
+    SUMMARY_CHAT_SYSTEM_PROMPT,
 )
-from src.utils import count_token, construct_system, construct_user, get_last_day_of_month, i18n
+from src.utils import (
+    hide_middle_chars,
+    count_token,
+    construct_system,
+    construct_user,
+    get_last_day_of_month,
+    i18n,
+    replace_special_symbols,
+)
 
 
 class OpenAIClient(BaseLLMModel):
@@ -31,18 +41,22 @@ class OpenAIClient(BaseLLMModel):
             system_prompt=INITIAL_SYSTEM_PROMPT,
             temperature=1.0,
             top_p=1.0,
+            user_name="",
     ) -> None:
         super().__init__(
             model_name=model_name,
             temperature=temperature,
             top_p=top_p,
             system_prompt=system_prompt,
+            user=user_name,
         )
         self.api_key = api_key
         self.need_api_key = True
         self._refresh_header()
 
     def get_answer_stream_iter(self):
+        if not self.api_key:
+            raise ValueError("API key is not set")
         response = self._get_response(stream=True)
         if response is not None:
             iter = self._decode_chat_response(response)
@@ -54,6 +68,8 @@ class OpenAIClient(BaseLLMModel):
             yield STANDARD_ERROR_MSG + GENERAL_ERROR_MSG
 
     def get_answer_at_once(self):
+        if not self.api_key:
+            raise ValueError("API key is not set")
         response = self._get_response()
         response = json.loads(response.text)
         content = response["choices"][0]["message"]["content"]
@@ -141,13 +157,13 @@ class OpenAIClient(BaseLLMModel):
             timeout = TIMEOUT_ALL
 
         # 如果有自定义的api-host，使用自定义host发送请求，否则使用默认设置发送请求
-        if shared.state.completion_url != COMPLETION_URL:
-            logger.info(f"使用自定义API URL: {shared.state.completion_url}")
+        if shared.state.chat_completion_url != CHAT_COMPLETION_URL:
+            logger.info(f"使用自定义API URL: {shared.state.chat_completion_url}")
 
         with config.retrieve_proxy():
             try:
                 response = requests.post(
-                    shared.state.completion_url,
+                    shared.state.chat_completion_url,
                     headers=headers,
                     json=payload,
                     timeout=timeout,
@@ -189,34 +205,86 @@ class OpenAIClient(BaseLLMModel):
                 c += 1
                 try:
                     chunk = json.loads(chunk[6:])
-                except json.JSONDecodeError:
+                except Exception as e:
                     print(i18n("JSON解析错误,收到的内容: ") + f"{chunk}")
                     error_msg += chunk
                     continue
-                if chunk_length > 6 and "delta" in chunk["choices"][0]:
-                    if "finish_reason" in chunk["choices"][0] and chunk["choices"][0]["finish_reason"] == "stop":
-                        self.all_token_counts.append(c)
-                        break
-                    try:
-                        yield chunk["choices"][0]["delta"]['content']
-                    except Exception as e:
-                        logger.error(f"Error: {e}")
-                        continue
-        if error_msg:
-            try:
-                error_msg = json.loads(error_msg)
-                if 'base_resp' in error_msg:
-                    status_code = error_msg['base_resp']['status_code']
-                    status_msg = error_msg['base_resp']['status_msg']
-                    raise Exception(f"{status_code} - {status_msg}")
-            except json.JSONDecodeError:
-                pass
+                try:
+                    if chunk_length > 6 and "delta" in chunk["choices"][0]:
+                        if "finish_reason" in chunk["choices"][0]:
+                            finish_reason = chunk["choices"][0]["finish_reason"]
+                        else:
+                            finish_reason = chunk["finish_reason"]
+                        if finish_reason == "stop":
+                            break
+                        try:
+                            yield chunk["choices"][0]["delta"]["content"]
+                        except Exception as e:
+                            logger.error(f"Error: {e}")
+                            continue
+                except:
+                    print(f"ERROR: {chunk}")
+                    continue
+        if error_msg and not error_msg == "data: [DONE]":
             raise Exception(error_msg)
 
     def set_key(self, new_access_key):
         ret = super().set_key(new_access_key)
         self._refresh_header()
         return ret
+
+    def _single_query_at_once(self, history, temperature=1.0):
+        timeout = TIMEOUT_ALL
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}",
+            "temperature": f"{temperature}",
+        }
+        payload = {
+            "model": self.model_name,
+            "messages": history,
+        }
+        # 如果有自定义的api-host，使用自定义host发送请求，否则使用默认设置发送请求
+        if shared.state.chat_completion_url != CHAT_COMPLETION_URL:
+            logger.debug(f"使用自定义API URL: {shared.state.chat_completion_url}")
+
+        with config.retrieve_proxy():
+            response = requests.post(
+                shared.state.chat_completion_url,
+                headers=headers,
+                json=payload,
+                stream=False,
+                timeout=timeout,
+            )
+
+        return response
+
+    def auto_name_chat_history(self, name_chat_method, user_question, chatbot, single_turn_checkbox):
+        if len(self.history) == 2 and not single_turn_checkbox and not config.hide_history_when_not_logged_in:
+            user_question = self.history[0]["content"]
+            if name_chat_method == i18n("模型自动总结（消耗tokens）"):
+                ai_answer = self.history[1]["content"]
+                try:
+                    history = [
+                        {"role": "system", "content": SUMMARY_CHAT_SYSTEM_PROMPT},
+                        {"role": "user",
+                         "content": f"Please write a title based on the following conversation:\n---\nUser: {user_question}\nAssistant: {ai_answer}"}
+                    ]
+                    response = self._single_query_at_once(history, temperature=0.0)
+                    response = json.loads(response.text)
+                    content = response["choices"][0]["message"]["content"]
+                    filename = replace_special_symbols(content) + ".json"
+                except Exception as e:
+                    logger.info(f"自动命名失败。{e}")
+                    filename = replace_special_symbols(user_question)[:16] + ".json"
+                return self.rename_chat_history(filename, chatbot)
+            elif name_chat_method == i18n("第一条提问"):
+                filename = replace_special_symbols(user_question)[:16] + ".json"
+                return self.rename_chat_history(filename, chatbot)
+            else:
+                return gr.update()
+        else:
+            return gr.update()
 
 
 class ChatGLMClient(BaseLLMModel):
@@ -298,13 +366,17 @@ def get_model(
         temperature=None,
         top_p=None,
         system_prompt=None,
-        user_name=None,
+        user_name="",
+        original_model=None,
 ):
     msg = i18n("模型设置为了：") + f" {model_name}"
     model_type = ModelType.get_type(model_name)
+    lora_selector_visibility = False
+    lora_choices = ["No LoRA"]
     if model_type != ModelType.OpenAI:
         config.local_embedding = True
-    model = None
+    model = original_model
+    chatbot = gr.Chatbot.update(label=model_name)
     try:
         if model_type == ModelType.OpenAI:
             logger.info(f"正在加载OpenAI模型: {model_name}")
@@ -312,8 +384,7 @@ def get_model(
                 model_name=model_name,
                 api_key=access_key,
                 system_prompt=system_prompt,
-                temperature=temperature,
-                top_p=top_p,
+                user_name=user_name,
             )
             logger.info(f"OpenAI模型加载完成: {model_name}")
         elif model_type == ModelType.ChatGLM:
@@ -323,16 +394,20 @@ def get_model(
             raise ValueError(f"未知模型: {model_name}")
     except Exception as e:
         logger.error(e)
-        msg = f"{STANDARD_ERROR_MSG}: {e}"
     logger.info(msg)
-    return model, msg
+    presudo_key = hide_middle_chars(access_key)
+    if original_model is not None and model is not None:
+        model.history = original_model.history
+        model.history_file_path = original_model.history_file_path
+    return model, msg, chatbot, gr.Dropdown.update(choices=lora_choices,
+                                                   visible=lora_selector_visibility), access_key, presudo_key
 
 
 if __name__ == "__main__":
     with open("../config.json", "r") as f:
         openai_api_key = json.load(f)["openai_api_key"]
     print('key:', openai_api_key)
-    client, _ = get_model(model_name="gpt-3.5-turbo", access_key=openai_api_key)
+    client = get_model(model_name="gpt-3.5-turbo", access_key=openai_api_key)[0]
     chatbot = []
     stream = False
     # 测试账单功能
@@ -355,8 +430,3 @@ if __name__ == "__main__":
     for i in client.retry(chatbot=chatbot, stream=stream):
         logger.info(i)
     logger.info(f"重试后history : {client.history}")
-    # # 测试总结功能
-    # print(colorama.Back.GREEN + "测试总结功能" + colorama.Back.RESET)
-    # chatbot, msg = client.reduce_token_size(chatbot=chatbot)
-    # print(chatbot, msg)
-    # print(f"总结后history: {client.history}")
