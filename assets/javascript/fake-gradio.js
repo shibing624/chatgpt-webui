@@ -107,7 +107,6 @@ function transEventListeners(target, source, events) {
             // console.log(targetEvent.detail);
         });
     });
-    /* 事实上，我发现这样写的大多数gradio组件并不适用。。所以。。。生气 */
 }
 
 function bgSelectHistory(a,b){
