@@ -17,6 +17,7 @@ from src.config import (
     show_api_billing,
     latex_delimiters_set,
     user_avatar, bot_avatar,
+    update_doc_config,
 )
 from src.models import get_model
 from src.overwrites import (
@@ -90,7 +91,8 @@ from src.utils import (
     get_template_content,
     like,
     transfer_input,
-
+    handle_file_upload,
+    handle_summarize_index,
 )
 
 gr.Chatbot._postprocess_chat_messages = postprocess_chat_messages
@@ -308,7 +310,8 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
                                                 multiselect=False,
                                                 container=False,
                                             )
-                        with gr.Accordion(label=i18n("知识库"), open=True, elem_id="gr-kb-accordion", visible=False):
+                        gr.Markdown("---", elem_classes="hr-line")
+                        with gr.Accordion(label=i18n("知识库"), open=True, elem_id="gr-kb-accordion", visible=True):
                             use_websearch_checkbox = gr.Checkbox(label=i18n(
                                 "使用在线搜索"), value=False, elem_classes="switch-checkbox", elem_id="gr-websearch-cb",
                                 visible=False)
@@ -318,7 +321,7 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
                                 elem_id="upload-index-file")
                             two_column = gr.Checkbox(label=i18n(
                                 "双栏pdf"), value=False)
-                            summarize_btn = gr.Button(i18n("总结"))
+                            summarize_btn = gr.Button(i18n("总结"), visible=False)
 
                     with gr.Tab(label=i18n("参数")):
                         gr.Markdown(i18n("# ⚠️ 务必谨慎更改 ⚠️"),
@@ -600,7 +603,10 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
         **end_outputing_args).then(
         **auto_name_chat_history_args)
     submitBtn.click(**get_usage_args)
-
+    index_files.upload(handle_file_upload, [current_model, index_files, chatbot, language_select_dropdown], [
+        index_files, chatbot, status_display])
+    summarize_btn.click(handle_summarize_index, [
+        current_model, index_files, chatbot, language_select_dropdown], [chatbot, status_display])
     emptyBtn.click(
         reset,
         inputs=[current_model, retain_system_prompt_checkbox],
@@ -652,6 +658,7 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
         [status_display],
         show_progress=False
     )
+    two_column.change(update_doc_config, [two_column], None)
 
     # LLM Models
     keyTxt.change(set_key, [current_model, keyTxt], [

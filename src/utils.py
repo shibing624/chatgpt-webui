@@ -620,12 +620,7 @@ def get_geoip():
             data = {"error": True, "reason": "连接ipapi失败"}
         if "error" in data.keys():
             logger.warning(f"无法获取IP地址信息。\n{data}")
-            if data["reason"] == "RateLimited":
-                SERVER_GEO_IP_MSG = i18n("您的IP区域：未知。你可以使用聊天功能。")
-            else:
-                SERVER_GEO_IP_MSG = (
-                        i18n("获取IP地理位置失败。原因：") + f"{data['reason']}" + i18n("。你仍然可以使用聊天功能。")
-                )
+            SERVER_GEO_IP_MSG = i18n("你可以使用聊天功能。")
         else:
             country = data["country_name"]
             if country == "China":
@@ -818,7 +813,7 @@ def auth_from_conf(username, password):
         return False
 
 
-def get_file_hash(file_src=None, file_paths=None):
+def get_files_hash(file_src=None, file_paths=None):
     if file_src:
         file_paths = [x.name for x in file_src]
     file_paths.sort(key=lambda x: os.path.basename(x))

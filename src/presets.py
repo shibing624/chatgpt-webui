@@ -88,18 +88,6 @@ ONLINE_MODELS = [
     "gpt-4-vision-preview",
 ]
 
-LOCAL_MODELS = [
-    "chatglm-6b",
-]
-
-MODELS = ONLINE_MODELS + LOCAL_MODELS
-if os.environ.get('HIDE_LOCAL_MODELS', 'false') == 'true':
-    MODELS = ONLINE_MODELS
-
-DEFAULT_MODEL = 0
-
-os.makedirs(HISTORY_DIR, exist_ok=True)
-
 MODEL_TOKEN_LIMIT = {
     "gpt-3.5-turbo": 4096,
     "gpt-3.5-turbo-16k": 16384,
@@ -111,6 +99,29 @@ MODEL_TOKEN_LIMIT = {
     "gpt-4-1106-preview": 128000,
     "gpt-4-vision-preview": 128000,
 }
+MODEL_METADATA = {
+    "Llama-2-7B-Chat": {
+        "repo_id": "TheBloke/Llama-2-7b-Chat-GGUF",
+        "filelist": ["llama-2-7b-chat.Q6_K.gguf"],
+    },
+    "YI-6B-Rag": {
+        "repo_id": "TheBloke/dragon-yi-6B-v0-GGUF",
+        "filelist": ["dragon-yi-6b-v0.Q5_K_M.gguf"],
+    },
+}
+LOCAL_MODELS = [
+    "chatglm-6b",
+    "Llama-2-7B-Chat",
+    "YI-6B-Rag",
+]
+
+MODELS = ONLINE_MODELS + LOCAL_MODELS
+if os.environ.get('HIDE_LOCAL_MODELS', 'false') == 'true':
+    MODELS = ONLINE_MODELS
+
+DEFAULT_MODEL = 0
+
+os.makedirs(HISTORY_DIR, exist_ok=True)
 
 TOKEN_OFFSET = 1000  # 模型的token上限减去这个值，得到软上限。到达软上限之后，自动尝试减少token占用。
 DEFAULT_TOKEN_LIMIT = 3000  # 默认的token上限

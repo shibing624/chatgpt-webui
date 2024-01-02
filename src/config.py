@@ -58,6 +58,7 @@ authflag = len(auth_list) > 0  # 是否开启认证的状态值，改为判断au
 api_host = config.get("openai_api_base", None)
 if api_host is not None:
     shared.state.set_api_host(api_host)
+    os.environ["OPENAI_API_BASE"] = f"{api_host}/v1"
 
 
 @contextmanager
@@ -81,6 +82,8 @@ os.environ["HTTPS_PROXY"] = ""
 local_embedding = config.get("local_embedding", False)  # 是否使用本地embedding
 chunk_size = config.get("chunk_size", 500)
 chunk_overlap = config.get("chunk_overlap", 30)
+hf_emb_model_name = config.get("hf_emb_model_name", "shibing624/text2vec-base-multilingual")
+
 
 @contextmanager
 def retrieve_proxy(proxy=None):

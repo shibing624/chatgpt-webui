@@ -3,11 +3,14 @@ import os
 from loguru import logger
 from tqdm import tqdm
 
-from src.config import local_embedding, retrieve_proxy, chunk_overlap, chunk_size
-from src.utils import excel_to_string, get_file_hash
+from src.config import local_embedding, retrieve_proxy, chunk_overlap, chunk_size, hf_emb_model_name
+from src.presets import OPENAI_API_BASE
+from src.utils import excel_to_string, get_files_hash
+
+pwd_path = os.path.abspath(os.path.dirname(__file__))
 
 
-def get_documents(file_src):
+def get_documents(file_paths):
     import PyPDF2
     from langchain.schema import Document
     from langchain.text_splitter import TokenTextSplitter
@@ -15,8 +18,8 @@ def get_documents(file_src):
 
     documents = []
     logger.debug("Loading documents...")
-    logger.debug(f"file_src: {file_src}")
-    for file in file_src:
+    logger.debug(f"file_paths: {file_paths}")
+    for file in file_paths:
         filepath = file.name
         filename = os.path.basename(filepath)
         file_type = os.path.splitext(filename)[1]
@@ -66,21 +69,20 @@ def get_documents(file_src):
                 from langchain.document_loaders import TextLoader
                 loader = TextLoader(filepath, "utf8")
                 texts = loader.load()
+            logger.debug(f"text size: {len(texts)}, text top3: {texts[:3]}")
         except Exception as e:
-            import traceback
-            logger.error(f"Error loading file: {filename}")
-            traceback.print_exc()
+            logger.error(f"Error loading file: {filename}, {e}")
 
         if texts is not None:
             texts = text_splitter.split_documents(texts)
             documents.extend(texts)
-    logger.debug("Documents loaded.")
+    logger.debug(f"Documents loaded. documents size: {len(documents)}, top3: {documents[:3]}")
     return documents
 
 
 def construct_index(
         api_key,
-        file_src,
+        files,
         max_input_size=4096,
         num_outputs=5,
         max_chunk_overlap=20,
@@ -95,43 +97,41 @@ def construct_index(
         os.environ["OPENAI_API_KEY"] = api_key
     else:
         os.environ["OPENAI_API_KEY"] = "sk-xxxxxxx"
-    chunk_size_limit = None if chunk_size_limit == 0 else chunk_size_limit
-    embedding_limit = None if embedding_limit == 0 else embedding_limit
-    separator = " " if separator == "" else separator
-
-    index_name = get_file_hash(file_src)
-    index_path = f"./index/{index_name}"
+    index_name = get_files_hash(files)
+    index_dir = os.path.join(pwd_path, '../index')
+    index_path = f"{index_dir}/{index_name}"
     if local_embedding:
-        embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/distiluse-base-multilingual-cased-v2")
+        embeddings = HuggingFaceEmbeddings(model_name=hf_emb_model_name)
     else:
         from langchain.embeddings import OpenAIEmbeddings
         if os.environ.get("OPENAI_API_TYPE", "openai") == "openai":
-            embeddings = OpenAIEmbeddings(openai_api_base=os.environ.get(
-                "OPENAI_API_BASE", None), openai_api_key=os.environ.get("OPENAI_EMBEDDING_API_KEY", api_key))
+            openai_api_base = os.environ.get("OPENAI_API_BASE", OPENAI_API_BASE)
+            embeddings = OpenAIEmbeddings(
+                openai_api_base=openai_api_base,
+                openai_api_key=os.environ.get("OPENAI_EMBEDDING_API_KEY", api_key)
+            )
         else:
-            embeddings = OpenAIEmbeddings(deployment=os.environ["AZURE_EMBEDDING_DEPLOYMENT_NAME"],
-                                          openai_api_key=os.environ["AZURE_OPENAI_API_KEY"],
-                                          model=os.environ["AZURE_EMBEDDING_MODEL_NAME"],
-                                          openai_api_base=os.environ["AZURE_OPENAI_API_BASE_URL"],
-                                          openai_api_type="azure")
+            embeddings = OpenAIEmbeddings(
+                deployment=os.environ["AZURE_EMBEDDING_DEPLOYMENT_NAME"],
+                openai_api_key=os.environ["AZURE_OPENAI_API_KEY"],
+                model=os.environ["AZURE_EMBEDDING_MODEL_NAME"],
+                openai_api_base=os.environ["AZURE_OPENAI_API_BASE_URL"],
+                openai_api_type="azure"
+            )
     if os.path.exists(index_path) and load_from_cache_if_possible:
         logger.info("找到了缓存的索引文件，加载中……")
         return FAISS.load_local(index_path, embeddings)
     else:
         try:
-            documents = get_documents(file_src)
+            documents = get_documents(files)
             logger.info("构建索引中……")
             with retrieve_proxy():
                 index = FAISS.from_documents(documents, embeddings)
             logger.debug("索引构建完成！")
-            os.makedirs("./index", exist_ok=True)
+            os.makedirs(index_dir, exist_ok=True)
             index.save_local(index_path)
             logger.debug("索引已保存至本地!")
             return index
-
         except Exception as e:
-            import traceback
-            logger.error("索引构建失败！%s", e)
-            traceback.print_exc()
+            logger.error(f"索引构建失败！error: {e}")
             return None

@@ -152,6 +152,7 @@ class BaseLLMModel:
         logger.warning("at once predict not implemented, using stream predict instead")
         response_iter = self.get_answer_stream_iter()
         count = 0
+        response = ''
         for response in response_iter:
             count += 1
         return response, sum(self.all_token_counts) + count
@@ -221,11 +222,11 @@ class BaseLLMModel:
         status_text = self.token_message()
         return chatbot, status_text
 
-    def handle_file_upload(self, files, chatbot):
+    def handle_file_upload(self, files, chatbot, language):
         """if the model accepts modal input, implement this function"""
         status = gr.Markdown.update()
         if files:
-            index = construct_index(self.api_key, file_src=files)
+            construct_index(self.api_key, files=files)
             status = i18n("索引构建完成")
         return gr.Files.update(), chatbot, status
 
@@ -248,7 +249,7 @@ class BaseLLMModel:
             logger.info(msg)
             index = construct_index(
                 self.api_key,
-                file_src=files,
+                files=files,
                 load_from_cache_if_possible=load_from_cache_if_possible,
             )
             assert index is not None, "获取索引失败"
@@ -258,8 +259,6 @@ class BaseLLMModel:
                 retriever = VectorStoreRetriever(
                     vectorstore=index, search_type="similarity", search_kwargs={"k": 6}
                 )
-                # retriever = VectorStoreRetriever(vectorstore=index, search_type="similarity_score_threshold", search_kwargs={
-                #                                  "k": 6, "score_threshold": 0.2})
                 try:
                     relevant_documents = retriever.get_relevant_documents(fake_inputs)
                 except AssertionError:

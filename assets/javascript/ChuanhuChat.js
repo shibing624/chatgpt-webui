@@ -87,7 +87,7 @@ function initialize() {
     historySelector = gradioApp().querySelector('#history-select-dropdown');
     chuanhuPopup = gradioApp().querySelector('#chuanhu-popup');
     settingBox = gradioApp().querySelector('#chuanhu-setting');
-    trainingBox = gradioApp().querySelector('#chuanhu-training');
+    // trainingBox = gradioApp().querySelector('#chuanhu-training');
     popupWrapper = gradioApp().querySelector('#popup-wrapper');
     chuanhuHeader = gradioApp().querySelector('#chuanhu-header');
     menu = gradioApp().querySelector('#menu-area');
@@ -112,7 +112,7 @@ function initialize() {
     checkModel();
 
     settingBox.classList.add('hideBox');
-    trainingBox.classList.add('hideBox');
+    // trainingBox.classList.add('hideBox');
 
     if (!historyLoaded) loadHistoryHtml();
     if (!usernameGotten) getUserInfo();

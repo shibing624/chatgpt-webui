@@ -11,6 +11,7 @@
     //== 基础配置 ==
     "language": "auto", // 界面语言，可选"auto", "en_US", "ja_JP"
     "users": [], // 用户列表，[[用户名1, 密码1], [用户名2, 密码2], ...]
+    "local_embedding": false, //是否在本地编制索引，如果为true，使用本地emb模型，否则使用openai的emb
     "hide_history_when_not_logged_in": false, //未登录情况下是否不展示对话历史
     "chat_name_method_index": 2, // 选择对话名称的方法。0: 使用日期时间命名；1: 使用第一条提问命名，2: 使用模型自动总结
     "bot_avatar": "default", // 机器人头像，可填写本地或网络图片链接，或者"none"（不显示头像）
