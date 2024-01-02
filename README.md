@@ -21,7 +21,7 @@
 
 ## ✨ Features
 本项目基于 [ChuanhuChatGPT](https://github.com/GaiZhenbiao/ChuanhuChatGPT) 简化而来，主要改动如下：
-1. 简化了WebUI页面，只保留ChatGPT的对话功能，去除了文档问答、在线搜索等功能；
+1. 简化了WebUI页面，只保留核心的ChatGPT对话(LLM)、文档检索对话（RAG）功能，去除了在线搜索/midjourney等功能；
 2. 重构了代码逻辑和结构，规范python语法，轻量化项目依赖库；
 3. 保留本地大语言模型对话，方便扩展本地模型；
 4. 支持nginx反向代理，静态文件使用相对路径，方便部署。
@@ -36,7 +36,7 @@
 ## 使用技巧
 
 ### 💪 强力功能
-- **GPT4助理**：类似 AutoGPT，全自动解决你的问题；
+- **GPT4 API**：基于代理配置GPT4 API，支持多用户对话；
 - **本地部署LLM**：一键部署，获取属于你自己的大语言模型。
 
 ### 🤖 System Prompt
@@ -114,3 +114,14 @@ python main.py
 如果问题仍然存在，请查阅该页面：[常见问题](https://github.com/shibing624/chatgpt-webui/wiki/常见问题)
 
 该页面列出了**几乎所有**您可能遇到的各种问题，包括如何配置代理，以及遇到问题后您该采取的措施，**请务必认真阅读**。
+
+## Contact
+
+- Issue(建议)
+  ：[![GitHub issues](https://img.shields.io/github/issues/shibing624/chatgpt-webui.svg)](https://github.com/shibing624/chatgpt-webui/issues)
+- 邮件我：xuming: xuming624@qq.com
+- 微信我： 加我*微信号：xuming624, 备注：姓名-公司名-NLP* 进NLP交流群（加我拉你进群）。
+
+<img src="https://github.com/shibing624/chatgpt-webui/blob/main/docs/wechat.jpeg" width="200" />
+
+<img src="https://github.com/shibing624/chatgpt-webui/blob/main/docs/wechat_group.png" width="200" />
