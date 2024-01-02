@@ -9,3 +9,7 @@ markdown
 pandas
 commentjson
 jinja2
+langchain==0.0.345
+markdown
+PyPDF2
+pdfplumber

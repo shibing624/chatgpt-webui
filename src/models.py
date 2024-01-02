@@ -121,8 +121,7 @@ class OpenAIClient(BaseLLMModel):
         openai_api_key = self.api_key
         system_prompt = self.system_prompt
         history = self.history
-        logger.debug(colorama.Fore.YELLOW +
-                     f"{history}" + colorama.Fore.RESET)
+        logger.debug(f"{history}")
         headers = {
             "Authorization": f"Bearer {openai_api_key}",
             "Content-Type": "application/json",
@@ -166,6 +165,7 @@ class OpenAIClient(BaseLLMModel):
                     shared.state.chat_completion_url,
                     headers=headers,
                     json=payload,
+                    stream=stream,
                     timeout=timeout,
                 )
             except Exception as e:
@@ -197,12 +197,10 @@ class OpenAIClient(BaseLLMModel):
 
     def _decode_chat_response(self, response):
         error_msg = ""
-        c = 0
         for chunk in response.iter_lines():
             if chunk:
                 chunk = chunk.decode()
                 chunk_length = len(chunk)
-                c += 1
                 try:
                     chunk = json.loads(chunk[6:])
                 except Exception as e:
@@ -331,8 +329,7 @@ class ChatGLMClient(BaseLLMModel):
     def _get_glm_style_input(self):
         history = [x["content"] for x in self.history]
         query = history.pop()
-        logger.debug(colorama.Fore.YELLOW +
-                     f"{history}" + colorama.Fore.RESET)
+        logger.debug(f"{history}")
         assert (
                 len(history) % 2 == 0
         ), f"History should be even length. current history is: {history}"

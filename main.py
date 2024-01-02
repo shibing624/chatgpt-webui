@@ -45,7 +45,6 @@ from src.presets import (
 from src.utils import (
     delete_chat_history,
     filter_history,
-
     get_history_list,
     auto_name_chat_history,
     get_template_dropdown,
@@ -96,7 +95,6 @@ from src.utils import (
 
 gr.Chatbot._postprocess_chat_messages = postprocess_chat_messages
 gr.Chatbot.postprocess = postprocess
-
 
 with gr.Blocks(theme=small_and_beautiful_theme) as demo:
     user_name = gr.Textbox("", visible=False)

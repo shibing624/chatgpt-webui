@@ -132,6 +132,43 @@ HISTORY_NAME_METHODS = [
     i18n("第一条提问"),
     i18n("模型自动总结（消耗tokens）"),
 ]
+WEBSEARCH_PTOMPT_TEMPLATE = """\
+Web search results:
+
+{web_results}
+Current date: {current_date}
+
+Instructions: Using the provided web search results, write a comprehensive reply to the given query. Make sure to cite results using [[number](URL)] notation after the reference. If the provided search results refer to multiple subjects with the same name, write separate answers for each subject.
+Query: {query}
+Reply in {reply_language}
+"""
+
+PROMPT_TEMPLATE = """\
+Context information is below.
+---------------------
+{context_str}
+---------------------
+Current date: {current_date}.
+Using the provided context information, write a comprehensive reply to the given query.
+Make sure to cite results using [number] notation after the reference.
+If the provided context information refer to multiple subjects with the same name, write separate answers for each subject.
+Use prior knowledge only if the given context didn't provide enough information.
+Answer the question: {query_str}
+Reply in {reply_language}
+"""
+
+REFINE_TEMPLATE = """\
+The original question is as follows: {query_str}
+We have provided an existing answer: {existing_answer}
+We have the opportunity to refine the existing answer
+(only if needed) with some more context below.
+------------
+{context_msg}
+------------
+Given the new context, refine the original answer to better
+Reply in {reply_language}
+If the context isn't useful, return the original answer.
+"""
 
 SUMMARIZE_PROMPT = """Write a concise summary of the following:
 

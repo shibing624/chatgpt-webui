@@ -2,13 +2,17 @@ import os
 import shutil
 import traceback
 from enum import Enum
+from itertools import islice
 
 import commentjson as json
 import gradio as gr
 import tiktoken
+import urllib3
 from loguru import logger
 
 from src import shared
+from src.config import retrieve_proxy
+from src.index_func import construct_index
 from src.presets import (
     MODEL_TOKEN_LIMIT,
     DEFAULT_TOKEN_LIMIT,
@@ -20,6 +24,8 @@ from src.presets import (
     NO_INPUT_MSG,
     HISTORY_DIR,
     INITIAL_SYSTEM_PROMPT,
+    PROMPT_TEMPLATE,
+    WEBSEARCH_PTOMPT_TEMPLATE,
 )
 from src.utils import (
     i18n,
@@ -35,6 +41,10 @@ from src.utils import (
     get_history_list,
     replace_special_symbols,
     get_first_history_name,
+    add_source_numbers,
+    add_details,
+    replace_today,
+
 )
 
 
@@ -142,7 +152,6 @@ class BaseLLMModel:
         logger.warning("at once predict not implemented, using stream predict instead")
         response_iter = self.get_answer_stream_iter()
         count = 0
-        response = ""
         for response in response_iter:
             count += 1
         return response, sum(self.all_token_counts) + count
@@ -170,6 +179,7 @@ class BaseLLMModel:
         logger.debug(f"输入token计数: {user_token_count}")
 
         stream_iter = self.get_answer_stream_iter()
+
         if display_append:
             display_append = (
                     '\n\n<hr class="append-display no-in-raw" />' + display_append
@@ -214,16 +224,111 @@ class BaseLLMModel:
     def handle_file_upload(self, files, chatbot):
         """if the model accepts modal input, implement this function"""
         status = gr.Markdown.update()
+        if files:
+            index = construct_index(self.api_key, file_src=files)
+            status = i18n("索引构建完成")
         return gr.Files.update(), chatbot, status
 
-    def prepare_inputs(self, real_inputs, use_websearch, files, reply_language, chatbot):
+    def prepare_inputs(
+            self, real_inputs, use_websearch,
+            files, reply_language, chatbot,
+            load_from_cache_if_possible=True,
+    ):
         display_append = []
         limited_context = False
         if type(real_inputs) == list:
             fake_inputs = real_inputs[0]["text"]
         else:
             fake_inputs = real_inputs
-        display_append = ""
+        if files:
+            from langchain.vectorstores.base import VectorStoreRetriever
+
+            limited_context = True
+            msg = "加载索引中……"
+            logger.info(msg)
+            index = construct_index(
+                self.api_key,
+                file_src=files,
+                load_from_cache_if_possible=load_from_cache_if_possible,
+            )
+            assert index is not None, "获取索引失败"
+            msg = "索引获取成功，生成回答中……"
+            logger.info(msg)
+            with retrieve_proxy():
+                retriever = VectorStoreRetriever(
+                    vectorstore=index, search_type="similarity", search_kwargs={"k": 6}
+                )
+                # retriever = VectorStoreRetriever(vectorstore=index, search_type="similarity_score_threshold", search_kwargs={
+                #                                  "k": 6, "score_threshold": 0.2})
+                try:
+                    relevant_documents = retriever.get_relevant_documents(fake_inputs)
+                except AssertionError:
+                    return self.prepare_inputs(
+                        fake_inputs,
+                        use_websearch,
+                        files,
+                        reply_language,
+                        chatbot,
+                        load_from_cache_if_possible=False,
+                    )
+            reference_results = [
+                [d.page_content.strip("�"), os.path.basename(d.metadata["source"])]
+                for d in relevant_documents
+            ]
+            reference_results = add_source_numbers(reference_results)
+            display_append = add_details(reference_results)
+            display_append = "\n\n" + "".join(display_append)
+            if type(real_inputs) == list:
+                real_inputs[0]["text"] = (
+                    replace_today(PROMPT_TEMPLATE)
+                    .replace("{query_str}", fake_inputs)
+                    .replace("{context_str}", "\n\n".join(reference_results))
+                    .replace("{reply_language}", reply_language)
+                )
+            else:
+                real_inputs = (
+                    replace_today(PROMPT_TEMPLATE)
+                    .replace("{query_str}", real_inputs)
+                    .replace("{context_str}", "\n\n".join(reference_results))
+                    .replace("{reply_language}", reply_language)
+                )
+        elif use_websearch:
+            from duckduckgo_search import DDGS
+            search_results = []
+            with DDGS() as ddgs:
+                ddgs_gen = ddgs.text(fake_inputs, backend="lite")
+                for r in islice(ddgs_gen, 10):
+                    search_results.append(r)
+            reference_results = []
+            for idx, result in enumerate(search_results):
+                logger.debug(f"搜索结果{idx + 1}：{result}")
+                domain_name = urllib3.util.parse_url(result["href"]).host
+                reference_results.append([result["body"], result["href"]])
+                display_append.append(
+                    # f"{idx+1}. [{domain_name}]({result['href']})\n"
+                    f"<a href=\"{result['href']}\" target=\"_blank\">{idx + 1}.&nbsp;{result['title']}</a>"
+                )
+            reference_results = add_source_numbers(reference_results)
+            # display_append = "<ol>\n\n" + "".join(display_append) + "</ol>"
+            display_append = (
+                    '<div class = "source-a">' + "".join(display_append) + "</div>"
+            )
+            if type(real_inputs) == list:
+                real_inputs[0]["text"] = (
+                    replace_today(WEBSEARCH_PTOMPT_TEMPLATE)
+                    .replace("{query}", fake_inputs)
+                    .replace("{web_results}", "\n\n".join(reference_results))
+                    .replace("{reply_language}", reply_language)
+                )
+            else:
+                real_inputs = (
+                    replace_today(WEBSEARCH_PTOMPT_TEMPLATE)
+                    .replace("{query}", fake_inputs)
+                    .replace("{web_results}", "\n\n".join(reference_results))
+                    .replace("{reply_language}", reply_language)
+                )
+        else:
+            display_append = ""
         return limited_context, fake_inputs, display_append, real_inputs, chatbot
 
     def predict(
@@ -328,10 +433,7 @@ class BaseLLMModel:
             yield chatbot, status_text
 
         if len(self.history) > 1 and self.history[-1]["content"] != inputs:
-            logger.info(
-                "回答为："
-                + f"{self.history[-1]['content']}"
-            )
+            logger.info("回答为：" + f"{self.history[-1]['content']}")
 
         if limited_context:
             # self.history = self.history[-4:]

@@ -79,7 +79,8 @@ os.environ["HTTP_PROXY"] = ""
 os.environ["HTTPS_PROXY"] = ""
 
 local_embedding = config.get("local_embedding", False)  # 是否使用本地embedding
-
+chunk_size = config.get("chunk_size", 500)
+chunk_overlap = config.get("chunk_overlap", 30)
 
 @contextmanager
 def retrieve_proxy(proxy=None):

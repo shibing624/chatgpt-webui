@@ -1,9 +1,10 @@
+import os
+from collections import namedtuple
+
 import gradio as gr
 from gradio.utils import validate_url
 from gradio_client import utils as client_utils
-import os
 
-from collections import namedtuple
 from src.presets import chuanhu_path, assets_path
 from src.utils import convert_bot_before_marked, convert_user_before_marked
 
@@ -89,6 +90,7 @@ def IOComponent_init(self, *args, **kwargs):
 
     return res
 
+
 original_IOComponent_init = gr.components.IOComponent.__init__
 gr.components.IOComponent.__init__ = IOComponent_init
 
@@ -98,6 +100,7 @@ def BlockContext_init(self, *args, **kwargs):
     add_classes_to_gradio_component(self)
 
     return res
+
 
 original_BlockContext_init = gr.blocks.BlockContext.__init__
 gr.blocks.BlockContext.__init__ = BlockContext_init
@@ -132,6 +135,7 @@ def list_scripts(scriptdirname, extension):
                     os.path.splitext(x.path)[1].lower() == extension and os.path.isfile(x.path)]
     return scripts_list
 
+
 def javascript_html():
     head = ""
     for script in list_scripts("javascript", ".js"):
@@ -146,7 +150,6 @@ def css_html():
     for cssfile in list_scripts("stylesheet", ".css"):
         head += f'<link rel="stylesheet" property="stylesheet" href="{webpath(cssfile.path)}">'
     return head
-
 
 
 def reload_javascript():
