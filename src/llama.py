@@ -6,6 +6,7 @@
 Llama:
 pip install llama-cpp-python
 
+install wiki: https://stackoverflow.com/questions/77267346/error-while-installing-python-package-llama-cpp-python
 """
 import os
 
