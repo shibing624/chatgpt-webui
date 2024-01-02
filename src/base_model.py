@@ -70,7 +70,7 @@ class ModelType(Enum):
                 model_type = ModelType.OpenAI
         elif "chatglm" in model_name_lower:
             model_type = ModelType.ChatGLM
-        elif "llama" in model_name_lower or "alpaca" in model_name_lower:
+        elif "llama" in model_name_lower or "alpaca" in model_name_lower or "yi" in model_name_lower:
             model_type = ModelType.LLaMA
         else:
             model_type = ModelType.Unknown

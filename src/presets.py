@@ -100,19 +100,19 @@ MODEL_TOKEN_LIMIT = {
     "gpt-4-vision-preview": 128000,
 }
 MODEL_METADATA = {
-    "Llama-2-7B-Chat": {
+    "llama-2-7b-chat": {
         "repo_id": "TheBloke/Llama-2-7b-Chat-GGUF",
         "filelist": ["llama-2-7b-chat.Q6_K.gguf"],
     },
-    "YI-6B-Rag": {
+    "yi-6b-rag": {
         "repo_id": "TheBloke/dragon-yi-6B-v0-GGUF",
         "filelist": ["dragon-yi-6b-v0.Q5_K_M.gguf"],
     },
 }
 LOCAL_MODELS = [
     "chatglm-6b",
-    "Llama-2-7B-Chat",
-    "YI-6B-Rag",
+    "llama-2-7b-chat",
+    "yi-6b-rag",
 ]
 
 MODELS = ONLINE_MODELS + LOCAL_MODELS
