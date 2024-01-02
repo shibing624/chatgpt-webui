@@ -9,6 +9,8 @@ pip install llama-cpp-python
 """
 import os
 
+from loguru import logger
+
 from src.base_model import BaseLLMModel
 from src.presets import MODEL_METADATA
 
@@ -32,7 +34,7 @@ def download(repo_id, filename, retry=3):
             )
             break
         except:
-            print("Error downloading model, retrying...")
+            logger.error(f"Error downloading model, repo_id: {repo_id}, filename: {filename}, retrying...")
             retry -= 1
     if retry == 0:
         raise Exception("Error downloading model, please try again later.")
@@ -59,6 +61,7 @@ class LLaMAClient(BaseLLMModel):
                         break
                 if path_to_model is not None:
                     break
+        logger.info(f"Loading model from {path_to_model}")
         self.system_prompt = ""
         try:
             from llama_cpp import Llama
