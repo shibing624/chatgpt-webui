@@ -55,7 +55,7 @@ A browser window will open and you will be able to chat with ChatGPT.
 
 > **Note**
 >
-> Please check our [wiki page](https://github.com/shibing624/chatgpt-webui/wiki/使用教程) for detailed instructions.
+> Please check our [wiki page](https://github.com/shibing624/chatgpt-webui/wiki) for detailed instructions.
 
 ## Troubleshooting
 
