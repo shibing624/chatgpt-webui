@@ -17,7 +17,7 @@
 
 **chatgpt-webui**: ChatGPT webui by gradio. 为ChatGPT等多种LLM提供了一个轻快好用的Web图形界面
 
-![img](https://github.com/shibing624/chatgpt-webui/blob/main/assets/snap.png)
+![img](https://github.com/shibing624/chatgpt-webui/blob/main/assets/chat.png)
 
 ## ✨ Features
 This project is based on [ChuanhuChatGPT](https://github.com/GaiZhenbiao/ChuanhuChatGPT), the main changes are as follows:

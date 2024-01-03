@@ -17,7 +17,7 @@
 
 **chatgpt-webui**: ChatGPT webui using gradio. 为ChatGPT等多种LLM提供了一个轻快好用的Web图形界面
 
-![img](https://github.com/shibing624/chatgpt-webui/blob/main/docs/snap.png)
+![img](https://github.com/shibing624/chatgpt-webui/blob/main/docs/chat.png)
 
 ## ✨ Features
 本项目基于 [ChuanhuChatGPT](https://github.com/GaiZhenbiao/ChuanhuChatGPT) 简化而来，主要改动如下：
@@ -31,13 +31,13 @@
    - Chinese chunk切分优化
 
 
-
 ## 支持模型
 
 - [ChatGPT(GPT-4)](https://chat.openai.com) 
 - [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service)
-- [ChatGLM](https://github.com/THUDM/ChatGLM-6B)
-
+- [ChatGLM3-6b](https://github.com/THUDM/ChatGLM3)
+- [Chinese-LLaMA-Alpaca-2](https://github.com/ymcui/Chinese-LLaMA-Alpaca-2)
+- [YI](https://github.com/01-ai/Yi)
 ## 使用技巧
 
 ### 💪 强力功能
