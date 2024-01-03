@@ -65,7 +65,7 @@ if local_models:
     presets.LOCAL_MODELS = local_models
     logger.info(f"已设置本地模型：{local_models}")
 
-hide_local_models = config.get("HIDE_LOCAL_MODELS", False)
+hide_local_models = config.get("hide_local_models", False)
 if hide_local_models:
     presets.MODELS = presets.ONLINE_MODELS
 
