@@ -26,6 +26,16 @@ show_api_billing = config.get("show_api_billing", False)
 # 选择对话名称的方法。0: 使用日期时间命名；1: 使用第一条提问命名，2: 使用模型自动总结
 chat_name_method_index = config.get("chat_name_method_index", 2)
 
+hide_local_models = config.get("hide_local_models", False)
+if hide_local_models:
+    presets.MODELS = presets.ONLINE_MODELS
+    logger.info(f"已设置隐藏本地模型，可用模型：{presets.MODELS}")
+else:
+    local_models = config.get("local_models", None)
+    if local_models:
+        presets.LOCAL_MODELS = local_models
+        logger.info(f"已设置本地模型：{local_models}")
+        presets.MODELS = presets.ONLINE_MODELS + presets.LOCAL_MODELS
 if "available_models" in config:
     presets.MODELS = config["available_models"]
     logger.info(f"已设置可用模型：{config['available_models']}")
@@ -59,15 +69,6 @@ api_host = config.get("openai_api_base", None)
 if api_host is not None:
     shared.state.set_api_host(api_host)
     os.environ["OPENAI_API_BASE"] = f"{api_host}/v1"
-
-local_models = config.get("local_models", None)
-if local_models:
-    presets.LOCAL_MODELS = local_models
-    logger.info(f"已设置本地模型：{local_models}")
-
-hide_local_models = config.get("hide_local_models", False)
-if hide_local_models:
-    presets.MODELS = presets.ONLINE_MODELS
 
 
 @contextmanager
