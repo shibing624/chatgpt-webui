@@ -12,12 +12,12 @@
 [![License Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![python_version](https://img.shields.io/badge/Python-3.8%2B-green.svg)](requirements.txt)
 [![GitHub issues](https://img.shields.io/github/issues/shibing624/chatgpt-webui.svg)](https://github.com/shibing624/chatgpt-webui/issues)
-[![Wechat Group](http://vlog.sfyc.ltd/wechat_everyday/wxgroup_logo.png?imageView2/0/w/60/h/20)](#Contact)
+[![Wechat Group](https://img.shields.io/badge/wechat-group-green.svg?logo=wechat)](#Contact)
 
 
-**chatgpt-webui**: ChatGPT webui by gradio. 为ChatGPT等多种LLM提供了一个轻快好用的Web图形界面
+**chatgpt-webui**: ChatGPT webui using gradio. 为ChatGPT等多种LLM提供了一个轻快好用的Web图形界面
 
-![img](https://github.com/shibing624/chatgpt-webui/blob/main/assets/chat.png)
+![img](https://github.com/shibing624/chatgpt-webui/blob/main/docs/chat.png)
 
 ## ✨ Features
 This project is based on [ChuanhuChatGPT](https://github.com/GaiZhenbiao/ChuanhuChatGPT), the main changes are as follows:
