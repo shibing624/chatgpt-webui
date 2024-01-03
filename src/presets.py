@@ -99,26 +99,15 @@ MODEL_TOKEN_LIMIT = {
     "gpt-4-1106-preview": 128000,
     "gpt-4-vision-preview": 128000,
 }
-MODEL_METADATA = {
-    "llama-2-7b-chat": {
-        "repo_id": "TheBloke/Llama-2-7b-Chat-GGUF",
-        "filelist": ["llama-2-7b-chat.Q6_K.gguf"],
-    },
-    "yi-6b-rag": {
-        "repo_id": "TheBloke/dragon-yi-6B-v0-GGUF",
-        "filelist": ["dragon-yi-6b-v0.Q5_K_M.gguf"],
-    },
+
+LOCAL_MODELS = {
+    "chatglm3-6b": "THUDM/chatglm3-6b",
+    "llama-2-7b-chat": "TheBloke/Llama-2-7B-Chat-GPTQ",
+    "yi-6b-chat-8bits": "01-ai/Yi-6B-Chat-8bits",
+    "yi-6b-chat": "01-ai/Yi-6B-Chat",
 }
-LOCAL_MODELS = [
-    "chatglm-6b",
-    "llama-2-7b-chat",
-    "yi-6b-rag",
-]
 
-MODELS = ONLINE_MODELS + LOCAL_MODELS
-if os.environ.get('HIDE_LOCAL_MODELS', 'false') == 'true':
-    MODELS = ONLINE_MODELS
-
+MODELS = ONLINE_MODELS + list(LOCAL_MODELS.keys())
 DEFAULT_MODEL = 0
 
 os.makedirs(HISTORY_DIR, exist_ok=True)

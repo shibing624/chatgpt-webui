@@ -3,13 +3,12 @@
 @author:XuMing(xuming624@qq.com)
 @description: 
 """
-import os
 import platform
 
-import colorama
 from loguru import logger
 
 from src.base_model import BaseLLMModel
+from src.presets import LOCAL_MODELS
 
 
 class ChatGLMClient(BaseLLMModel):
@@ -21,26 +20,17 @@ class ChatGLMClient(BaseLLMModel):
         self.deinitialize()
         if CHATGLM_TOKENIZER is None or CHATGLM_MODEL is None:
             system_name = platform.system()
-            model_path = None
-            if os.path.exists("models"):
-                model_dirs = os.listdir("models")
-                if model_name in model_dirs:
-                    model_path = f"models/{model_name}"
-            if model_path is not None:
-                model_source = model_path
+            logger.info(f"Loading model from {model_name}")
+            if model_name in LOCAL_MODELS:
+                model_path = LOCAL_MODELS[model_name]
             else:
-                model_source = f"THUDM/{model_name}"
-            CHATGLM_TOKENIZER = AutoTokenizer.from_pretrained(
-                model_source, trust_remote_code=True
-            )
+                model_path = model_name
+            CHATGLM_TOKENIZER = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
             quantified = False
             if "int4" in model_name:
                 quantified = True
-            model = AutoModel.from_pretrained(
-                model_source, trust_remote_code=True
-            )
+            model = AutoModel.from_pretrained(model_path, trust_remote_code=True)
             if torch.cuda.is_available():
-                # run on CUDA
                 logger.info("CUDA is available, using CUDA")
                 model = model.half().cuda()
             # mps加速还存在一些问题，暂时不使用
@@ -62,11 +52,8 @@ class ChatGLMClient(BaseLLMModel):
     def _get_glm2_style_input(self):
         history = [x["content"] for x in self.history]
         query = history.pop()
-        logger.debug(colorama.Fore.YELLOW +
-                     f"{history}" + colorama.Fore.RESET)
-        assert (
-                len(history) % 2 == 0
-        ), f"History should be even length. current history is: {history}"
+        logger.debug(f"{history}")
+        assert len(history) % 2 == 0, f"History should be even length. current history is: {history}"
         history = [[history[i], history[i + 1]]
                    for i in range(0, len(history), 2)]
         return history, query

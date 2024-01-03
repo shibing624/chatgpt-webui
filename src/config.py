@@ -60,6 +60,15 @@ if api_host is not None:
     shared.state.set_api_host(api_host)
     os.environ["OPENAI_API_BASE"] = f"{api_host}/v1"
 
+local_models = config.get("local_models", None)
+if local_models:
+    presets.LOCAL_MODELS = local_models
+    logger.info(f"已设置本地模型：{local_models}")
+
+hide_local_models = config.get("HIDE_LOCAL_MODELS", False)
+if hide_local_models:
+    presets.MODELS = presets.ONLINE_MODELS
+
 
 @contextmanager
 def retrieve_openai_api(api_key=None):

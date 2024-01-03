@@ -12,11 +12,14 @@
     "language": "auto", // 界面语言，可选"auto", "en_US", "ja_JP"
     "users": [], // 用户列表，[[用户名1, 密码1], [用户名2, 密码2], ...]
     "local_embedding": false, //是否在本地编制索引，如果为true，使用本地emb模型，否则使用openai的emb
+    "HIDE_LOCAL_MODELS": true, //是否隐藏本地模型, 如果为true，只显示openai的模型
     "hide_history_when_not_logged_in": false, //未登录情况下是否不展示对话历史
     "chat_name_method_index": 2, // 选择对话名称的方法。0: 使用日期时间命名；1: 使用第一条提问命名，2: 使用模型自动总结
     "bot_avatar": "default", // 机器人头像，可填写本地或网络图片链接，或者"none"（不显示头像）
     "user_avatar": "default", // 用户头像，可填写本地或网络图片链接，或者"none"（不显示头像）
 
+    // 本地模型配置
+    "local_models": {}, // 本地模型列表，格式为 {"模型名称": "模型路径", ...}, eg: {"yi-6b-chat-8bits": "./01-ai--Yi-6B-Chat-8bits"}
     // 是否多个API Key轮换使用
     "multi_api_key": false,
     "api_key_list": [
