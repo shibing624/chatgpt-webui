@@ -29,7 +29,7 @@ class ChatGLMClient(BaseLLMModel):
             quantified = False
             if "int4" in model_name:
                 quantified = True
-            model = AutoModel.from_pretrained(model_path, trust_remote_code=True)
+            model = AutoModel.from_pretrained(model_path, trust_remote_code=True, device_map='auto', torch_dtype='auto')
             if torch.cuda.is_available():
                 logger.info("CUDA is available, using CUDA")
                 model = model.half().cuda()
@@ -42,6 +42,7 @@ class ChatGLMClient(BaseLLMModel):
                 logger.info("GPU is not available, using CPU")
                 model = model.float()
             model = model.eval()
+            logger.info(f"Model loaded from {model_path}")
             CHATGLM_MODEL = model
 
     def _get_glm3_style_input(self):

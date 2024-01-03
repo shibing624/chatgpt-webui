@@ -11,6 +11,7 @@ from loguru import logger
 from src.base_model import BaseLLMModel
 from src.presets import LOCAL_MODELS
 
+
 class LLaMAClient(BaseLLMModel):
     def __init__(self, model_name, user_name=""):
         super().__init__(model_name=model_name, user=user_name)
@@ -23,6 +24,7 @@ class LLaMAClient(BaseLLMModel):
             model_path = model_name
         self.tokenizer = AutoTokenizer.from_pretrained(model_path, legacy=True, use_fast=False)
         self.model = AutoModelForCausalLM.from_pretrained(model_path, device_map='auto', torch_dtype='auto').eval()
+        logger.info(f"Model loaded from {model_path}")
         self.stop_str = self.tokenizer.eos_token or "</s>"
 
     def _get_chat_input(self):
@@ -48,6 +50,8 @@ class LLaMAClient(BaseLLMModel):
         output_ids = self.model.generate(
             input_ids,
             max_new_tokens=self.max_generation_token,
+            top_p=self.top_p,
+            temperature=self.temperature,
         )
         response = self.tokenizer.decode(output_ids[0][input_ids.shape[1]:], skip_special_tokens=True)
 
@@ -62,7 +66,11 @@ class LLaMAClient(BaseLLMModel):
         )
         thread = Thread(
             target=self.model.generate,
-            kwargs={"input_ids": input_ids, "max_new_tokens": self.max_generation_token, "streamer": streamer}
+            kwargs={"input_ids": input_ids,
+                    "max_new_tokens": self.max_generation_token,
+                    "top_p": self.top_p,
+                    "temperature": self.temperature,
+                    "streamer": streamer}
         )
         thread.start()
         generated_text = ""
