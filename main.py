@@ -404,9 +404,9 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
                                 value=user_name.value,
                                 lines=1,
                             )
-                    with gr.Tab(label=i18n("增值")):
-                        gr.Markdown("#### " + i18n("ChatGPT API"))
-                        gr.Markdown("**GPT4 API充值**：\n微信号：xuming624  备注：gpt4 api")
+                    with gr.Tab(label=i18n("关于")):
+                        gr.Markdown("#### " + i18n("ChatGPT WebUI"))
+                        gr.Markdown(CHUANHU_DESCRIPTION)
 
     with gr.Row(elem_id="popup-wrapper"):
         with gr.Box(elem_id="chuanhu-popup"):
