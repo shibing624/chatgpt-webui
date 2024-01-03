@@ -777,6 +777,7 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
     )
 
 demo.title = CHUANHU_TITLE
+
 if __name__ == "__main__":
     reload_javascript()
     setup_wizard()

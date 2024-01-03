@@ -733,9 +733,7 @@ class BaseLLMModel:
                 pass
             if len(saved_json["chatbot"]) < len(saved_json["history"]) // 2:
                 logger.info("Trimming corrupted history...")
-                saved_json["history"] = saved_json["history"][
-                                        -len(saved_json["chatbot"]):
-                                        ]
+                saved_json["history"] = saved_json["history"][-len(saved_json["chatbot"]):]
                 logger.info(f"Trimmed history: {saved_json['history']}")
             logger.debug(f"{self.user_name} 加载对话历史完毕")
             self.history = saved_json["history"]
