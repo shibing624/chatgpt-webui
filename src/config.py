@@ -35,7 +35,7 @@ else:
     if local_models:
         presets.LOCAL_MODELS = local_models
         logger.info(f"已设置本地模型：{local_models}")
-        presets.MODELS = presets.ONLINE_MODELS + presets.LOCAL_MODELS
+        presets.MODELS = presets.ONLINE_MODELS + list(presets.LOCAL_MODELS.keys())
 if "available_models" in config:
     presets.MODELS = config["available_models"]
     logger.info(f"已设置可用模型：{config['available_models']}")
