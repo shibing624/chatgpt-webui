@@ -13,7 +13,7 @@ class I18nAuto:
     def __init__(self):
         language = os.environ.get("LANGUAGE", "auto")
         if language == "auto":
-            language = locale.getdefaultlocale()[0]  # get the language code of the system (ex. zh_CN)
+            language = locale.getdefaultlocale()[0]  # get the language code of the system (e.g. zh_CN)
         self.language_map = {}
         file_path = os.path.join(pwd_path, f'../locale/{language}.json')
         self.file_is_exists = os.path.isfile(file_path)

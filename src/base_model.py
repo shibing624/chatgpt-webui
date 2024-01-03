@@ -44,7 +44,7 @@ from src.utils import (
     add_source_numbers,
     add_details,
     replace_today,
-
+    chinese_preprocessing_func,
 )
 
 
@@ -243,11 +243,11 @@ class BaseLLMModel:
             fake_inputs = real_inputs
         if files:
             from langchain.vectorstores.base import VectorStoreRetriever
-
+            from langchain.retrievers import BM25Retriever, EnsembleRetriever
             limited_context = True
             msg = "加载索引中……"
             logger.info(msg)
-            index = construct_index(
+            index, documents = construct_index(
                 self.api_key,
                 files=files,
                 load_from_cache_if_possible=load_from_cache_if_possible,
@@ -255,13 +255,23 @@ class BaseLLMModel:
             assert index is not None, "获取索引失败"
             msg = "索引获取成功，生成回答中……"
             logger.info(msg)
+            k = 3
+            score_threshold = 0.6
             with retrieve_proxy():
-                retriever = VectorStoreRetriever(
-                    vectorstore=index, search_type="similarity", search_kwargs={"k": 6}
+                vec_retriever = VectorStoreRetriever(
+                    vectorstore=index,
+                    search_type="similarity_score_threshold",
+                    search_kwargs={"k": k, "score_threshold": score_threshold}
+                )
+                bm25_retriever = BM25Retriever.from_documents(documents, preprocess_func=chinese_preprocessing_func)
+                bm25_retriever.k = k
+                ensemble_retriever = EnsembleRetriever(
+                    retrievers=[bm25_retriever, vec_retriever],
+                    weights=[0.5, 0.5],
                 )
                 try:
-                    relevant_documents = retriever.get_relevant_documents(fake_inputs)
-                except AssertionError:
+                    relevant_documents = ensemble_retriever.get_relevant_documents(fake_inputs)
+                except:
                     return self.prepare_inputs(
                         fake_inputs,
                         use_websearch,

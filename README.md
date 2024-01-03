@@ -26,7 +26,7 @@
 3. 保留本地大语言模型对话，方便扩展本地模型
 4. 支持nginx反向代理，静态文件使用相对路径，方便部署
 5. 提升RAG检索准确率
-   - 引入BM25和PositionRank提升对query关键词的字面匹配，使用字面相似度+sentence embedding向量相似度加权获取corpus候选集
+   - 引入jieba分词的rank_BM25，提升对query关键词的字面匹配，使用字面相似度+sentence embedding向量相似度加权获取corpus候选集
    - RAG底模优化，使用基于RAG微调的模型
    - Chinese chunk切分优化
 

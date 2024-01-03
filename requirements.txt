@@ -16,3 +16,5 @@ pdfplumber
 faiss-cpu>=1.7.4
 pydantic-core==2.14.6
 pydantic==1.10.13
+rank-bm25
+jieba

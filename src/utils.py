@@ -7,6 +7,7 @@ import hashlib
 import html
 import json
 import os
+import pickle
 import re
 import threading
 from enum import Enum
@@ -1359,3 +1360,20 @@ def setup_wizard():
         wizard.save()
         print(colorama.Back.GREEN + i18n("设置完成。现在请重启本程序。") + colorama.Style.RESET_ALL)
         exit()
+
+
+def save_pkl(data, file_path):
+    with open(file_path, 'wb') as f:
+        pickle.dump(data, f)
+
+
+def load_pkl(file_path):
+    with open(file_path, 'rb') as f:
+        data = pickle.load(f)
+    return data
+
+
+def chinese_preprocessing_func(text: str) -> List[str]:
+    import jieba
+    jieba.setLogLevel('ERROR')
+    return jieba.lcut(text)

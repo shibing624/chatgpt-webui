@@ -1,20 +1,104 @@
 import os
+import re
+from typing import List, Optional, Any
 
+from langchain.schema import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from loguru import logger
 from tqdm import tqdm
 
 from src.config import local_embedding, retrieve_proxy, chunk_overlap, chunk_size, hf_emb_model_name
 from src.presets import OPENAI_API_BASE
-from src.utils import excel_to_string, get_files_hash
+from src.utils import excel_to_string, get_files_hash, load_pkl, save_pkl
 
 pwd_path = os.path.abspath(os.path.dirname(__file__))
 
 
+class ChineseRecursiveTextSplitter(RecursiveCharacterTextSplitter):
+    """Recursive text splitter for Chinese text.
+    copy from: https://github.com/chatchat-space/Langchain-Chatchat/tree/master
+    """
+
+    def __init__(
+            self,
+            separators: Optional[List[str]] = None,
+            keep_separator: bool = True,
+            is_separator_regex: bool = True,
+            **kwargs: Any,
+    ) -> None:
+        """Create a new TextSplitter."""
+        super().__init__(keep_separator=keep_separator, **kwargs)
+        self._separators = separators or [
+            "\n\n",
+            "\n",
+            "。|！|？",
+            "\.\s|\!\s|\?\s",
+            "；|;\s",
+            "，|,\s"
+        ]
+        self._is_separator_regex = is_separator_regex
+
+    @staticmethod
+    def _split_text_with_regex_from_end(
+            text: str, separator: str, keep_separator: bool
+    ) -> List[str]:
+        # Now that we have the separator, split the text
+        if separator:
+            if keep_separator:
+                # The parentheses in the pattern keep the delimiters in the result.
+                _splits = re.split(f"({separator})", text)
+                splits = ["".join(i) for i in zip(_splits[0::2], _splits[1::2])]
+                if len(_splits) % 2 == 1:
+                    splits += _splits[-1:]
+            else:
+                splits = re.split(separator, text)
+        else:
+            splits = list(text)
+        return [s for s in splits if s != ""]
+
+    def _split_text(self, text: str, separators: List[str]) -> List[str]:
+        """Split incoming text and return chunks."""
+        final_chunks = []
+        # Get appropriate separator to use
+        separator = separators[-1]
+        new_separators = []
+        for i, _s in enumerate(separators):
+            _separator = _s if self._is_separator_regex else re.escape(_s)
+            if _s == "":
+                separator = _s
+                break
+            if re.search(_separator, text):
+                separator = _s
+                new_separators = separators[i + 1:]
+                break
+
+        _separator = separator if self._is_separator_regex else re.escape(separator)
+        splits = self._split_text_with_regex_from_end(text, _separator, self._keep_separator)
+
+        # Now go merging things, recursively splitting longer texts.
+        _good_splits = []
+        _separator = "" if self._keep_separator else separator
+        for s in splits:
+            if self._length_function(s) < self._chunk_size:
+                _good_splits.append(s)
+            else:
+                if _good_splits:
+                    merged_text = self._merge_splits(_good_splits, _separator)
+                    final_chunks.extend(merged_text)
+                    _good_splits = []
+                if not new_separators:
+                    final_chunks.append(s)
+                else:
+                    other_info = self._split_text(s, new_separators)
+                    final_chunks.extend(other_info)
+        if _good_splits:
+            merged_text = self._merge_splits(_good_splits, _separator)
+            final_chunks.extend(merged_text)
+        return [re.sub(r"\n{2,}", "\n", chunk.strip()) for chunk in final_chunks if chunk.strip() != ""]
+
+
 def get_documents(file_paths):
-    import PyPDF2
-    from langchain.schema import Document
-    from langchain.text_splitter import TokenTextSplitter
-    text_splitter = TokenTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    text_splitter = ChineseRecursiveTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
 
     documents = []
     logger.debug("Loading documents...")
@@ -27,6 +111,7 @@ def get_documents(file_paths):
         texts = None
         try:
             if file_type == ".pdf":
+                import PyPDF2
                 logger.debug("Loading PDF...")
                 try:
                     from src.pdf_func import parse_pdf
@@ -83,12 +168,6 @@ def get_documents(file_paths):
 def construct_index(
         api_key,
         files,
-        max_input_size=4096,
-        num_outputs=5,
-        max_chunk_overlap=20,
-        chunk_size_limit=600,
-        embedding_limit=None,
-        separator=" ",
         load_from_cache_if_possible=True,
 ):
     from langchain.vectorstores import FAISS
@@ -100,6 +179,7 @@ def construct_index(
     index_name = get_files_hash(files)
     index_dir = os.path.join(pwd_path, '../index')
     index_path = f"{index_dir}/{index_name}"
+    doc_file = f"{index_path}/docs.pkl"
     if local_embedding:
         embeddings = HuggingFaceEmbeddings(model_name=hf_emb_model_name)
     else:
@@ -120,7 +200,9 @@ def construct_index(
             )
     if os.path.exists(index_path) and load_from_cache_if_possible:
         logger.info("找到了缓存的索引文件，加载中……")
-        return FAISS.load_local(index_path, embeddings)
+        index = FAISS.load_local(index_path, embeddings)
+        documents = load_pkl(doc_file)
+        return index, documents
     else:
         try:
             documents = get_documents(files)
@@ -131,7 +213,9 @@ def construct_index(
             os.makedirs(index_dir, exist_ok=True)
             index.save_local(index_path)
             logger.debug("索引已保存至本地!")
-            return index
+            save_pkl(documents, doc_file)
+            logger.debug("索引文档已保存至本地!")
+            return index, documents
         except Exception as e:
             logger.error(f"索引构建失败！error: {e}")
             return None
