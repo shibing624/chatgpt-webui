@@ -74,8 +74,7 @@ INDEX_QUERY_TEMPRATURE = 1.0
 
 CHUANHU_TITLE = i18n("ChatGPT 🚀")
 
-CHUANHU_DESCRIPTION = i18n("GitHub: [shibing624/chatgpt-webui](shibing624](https://github.com/shibing624/chatgpt-webui)"
-                           " \ndevelop by [shibing624](https://github.com/shibing624)(XuMing)")
+CHUANHU_DESCRIPTION = i18n("GitHub: [shibing624/chatgpt-webui](https://github.com/shibing624/chatgpt-webui)")
 
 ONLINE_MODELS = [
     "gpt-3.5-turbo",
