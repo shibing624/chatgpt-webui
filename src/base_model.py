@@ -445,8 +445,6 @@ class BaseLLMModel:
             logger.info("回答为：" + f"{self.history[-1]['content']}")
 
         if limited_context:
-            # self.history = self.history[-4:]
-            # self.all_token_counts = self.all_token_counts[-2:]
             self.history = []
             self.all_token_counts = []
 
