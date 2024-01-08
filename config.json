@@ -1,6 +1,6 @@
 {
-    "openai_api_key": "sk-3AmBmgGILenGk3N2514a7e3004354870Ac1aE0A45a1a7e64",
-    "openai_api_base": "https://apejhvxcd.cloud.sealos.io",
+    "openai_api_key": "sk-xxx",
+    "openai_api_base": "https://xxx",
     "language": "auto",
     "users": [["admin", "admin"]],
     "default_model": "gpt-3.5-turbo",

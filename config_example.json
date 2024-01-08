@@ -1,8 +1,9 @@
 {
     // 你的OpenAI API Key，一般必填，
     // 若缺省填为 "openai_api_key": "" 则必须再在图形界面中填入API Key
-    "openai_api_key": "sk-3AmBmgGILenGk3N2514a7e3004354870Ac1aE0A45a1a7e64",
-    "openai_api_base": "https://apejhvxcd.cloud.sealos.io",
+    "openai_api_key": "sk-xxx",
+    // 你的OpenAI API Base，删除是使用默认官方openai的
+    "openai_api_base": "xxx",
     // 如果使用代理，请取消注释下面的两行，并替换代理URL
     // "https_proxy": "http://127.0.0.1:1079",
     // "http_proxy": "http://127.0.0.1:1079",
