@@ -808,7 +808,7 @@ class BaseLLMModel:
             return gr.update(), gr.update(), gr.update()
         if filename == "":
             return i18n("你没有选择任何对话历史"), gr.update(), gr.update()
-        if not filename.endswith(".json"):
+        if filename and not filename.endswith(".json"):
             filename += ".json"
         if filename == os.path.basename(filename):
             history_file_path = os.path.join(HISTORY_DIR, self.user_name, filename)

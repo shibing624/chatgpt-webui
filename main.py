@@ -10,20 +10,27 @@ from src.config import (
     http_proxy,
     hide_history_when_not_logged_in,
     chat_name_method_index,
-    my_api_key, multi_api_key, server_name,
-    server_port, share, config_file, api_host,
+    my_api_key,
+    multi_api_key,
+    server_name,
+    server_port,
+    share,
+    config_file,
+    api_host,
     authflag,
     dockerflag,
     show_api_billing,
     latex_delimiters_set,
-    user_avatar, bot_avatar,
+    user_avatar,
+    bot_avatar,
     update_doc_config,
 )
 from src.models import get_model
 from src.overwrites import (
-    postprocess, postprocess_chat_messages,
-    reload_javascript, get_html,
-
+    postprocess,
+    postprocess_chat_messages,
+    reload_javascript,
+    get_html,
 )
 from src.presets import (
     MODELS,
@@ -41,7 +48,6 @@ from src.presets import (
     API_HOST,
     HISTORY_DIR,
     assets_path,
-
 )
 from src.utils import (
     delete_chat_history,
@@ -84,7 +90,8 @@ from src.utils import (
     reset_default,
     reset_textbox,
     set_stop_sequence,
-    set_presence_penalty, set_frequency_penalty,
+    set_presence_penalty,
+    set_frequency_penalty,
     upload_chat_history,
     export_markdown,
     billing_info,

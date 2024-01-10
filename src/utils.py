@@ -40,13 +40,15 @@ if TYPE_CHECKING:
 
 
 def predict(current_model, *args):
-    iter = current_model.predict(*args)
-    for i in iter:
-        yield i
+    if current_model:
+        iter = current_model.predict(*args)
+        for i in iter:
+            yield i
 
 
 def billing_info(current_model):
-    return current_model.billing_info()
+    if current_model:
+        return current_model.billing_info()
 
 
 def set_key(current_model, *args):
@@ -66,7 +68,8 @@ def interrupt(current_model, *args):
 
 
 def reset(current_model, *args):
-    return current_model.reset(*args)
+    if current_model:
+        return current_model.reset(*args)
 
 
 def retry(current_model, *args):
@@ -92,7 +95,8 @@ def rename_chat_history(current_model, *args):
 
 
 def auto_name_chat_history(current_model, *args):
-    return current_model.auto_name_chat_history(*args)
+    if current_model:
+        return current_model.auto_name_chat_history(*args)
 
 
 def export_markdown(current_model, *args):
