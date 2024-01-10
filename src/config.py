@@ -90,7 +90,7 @@ os.environ["HTTP_PROXY"] = ""
 os.environ["HTTPS_PROXY"] = ""
 
 local_embedding = config.get("local_embedding", False)  # 是否使用本地embedding
-chunk_size = config.get("chunk_size", 250)
+chunk_size = config.get("chunk_size", 500)
 chunk_overlap = config.get("chunk_overlap", 50)
 hf_emb_model_name = config.get("hf_emb_model_name", "shibing624/text2vec-base-multilingual")
 
