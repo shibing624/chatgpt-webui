@@ -156,7 +156,7 @@ class OpenAIClient(BaseLLMModel):
             payload["stop"] = self.stop_sequence
         if self.logit_bias is not None:
             payload["logit_bias"] = self.logit_bias
-        if self.user_identifier is not None:
+        if self.user_identifier:
             payload["user"] = self.user_identifier
 
         if stream:
