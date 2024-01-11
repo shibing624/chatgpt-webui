@@ -11,7 +11,7 @@ import urllib3
 from loguru import logger
 
 from src import shared
-from src.config import retrieve_proxy
+from src.config import retrieve_proxy, local_embedding
 from src.index_func import construct_index
 from src.presets import (
     MODEL_TOKEN_LIMIT,
@@ -255,22 +255,30 @@ class BaseLLMModel:
             assert index is not None, "获取索引失败"
             msg = "索引获取成功，生成回答中……"
             logger.info(msg)
-            k = 3
-            score_threshold = 0.6
             with retrieve_proxy():
-                vec_retriever = VectorStoreRetriever(
-                    vectorstore=index,
-                    search_type="similarity_score_threshold",
-                    search_kwargs={"k": k, "score_threshold": score_threshold}
-                )
-                bm25_retriever = BM25Retriever.from_documents(documents, preprocess_func=chinese_preprocessing_func)
-                bm25_retriever.k = k
-                ensemble_retriever = EnsembleRetriever(
-                    retrievers=[bm25_retriever, vec_retriever],
-                    weights=[0.5, 0.5],
-                )
+                if local_embedding:
+                    k = 3
+                    score_threshold = 0.4
+                    vec_retriever = VectorStoreRetriever(
+                        vectorstore=index,
+                        search_type="similarity_score_threshold",
+                        search_kwargs={"k": k, "score_threshold": score_threshold}
+                    )
+                    bm25_retriever = BM25Retriever.from_documents(documents, preprocess_func=chinese_preprocessing_func)
+                    bm25_retriever.k = k
+                    retriever = EnsembleRetriever(
+                        retrievers=[bm25_retriever, vec_retriever],
+                        weights=[0.5, 0.5],
+                    )
+                else:
+                    k = 5
+                    retriever = VectorStoreRetriever(
+                        vectorstore=index,
+                        search_type="similarity",
+                        search_kwargs={"k": k}
+                    )
                 try:
-                    relevant_documents = ensemble_retriever.get_relevant_documents(fake_inputs)
+                    relevant_documents = retriever.get_relevant_documents(fake_inputs)
                 except:
                     return self.prepare_inputs(
                         fake_inputs,
@@ -349,8 +357,7 @@ class BaseLLMModel:
             files=None,
             reply_language="中文",
             should_check_token_count=True,
-    ):  # repetition_penalty, top_k
-
+    ):
         status_text = "开始生成回答……"
         if type(inputs) == list:
             logger.info(
