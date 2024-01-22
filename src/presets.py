@@ -29,10 +29,6 @@ class I18nAuto:
 
 
 i18n = I18nAuto()  # internationalization
-CHATGLM_MODEL = None
-CHATGLM_TOKENIZER = None
-LLAMA_MODEL = None
-LLAMA_INFERENCER = None
 
 # ChatGPT 设置
 INITIAL_SYSTEM_PROMPT = "You are a helpful assistant."
