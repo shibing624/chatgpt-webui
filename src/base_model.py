@@ -97,10 +97,7 @@ class BaseLLMModel:
         self.all_token_counts = []
         self.model_name = model_name
         self.model_type = ModelType.get_type(model_name)
-        try:
-            self.token_upper_limit = MODEL_TOKEN_LIMIT[model_name]
-        except KeyError:
-            self.token_upper_limit = DEFAULT_TOKEN_LIMIT
+        self.token_upper_limit = MODEL_TOKEN_LIMIT.get(model_name, DEFAULT_TOKEN_LIMIT)
         self.interrupted = False
         self.system_prompt = system_prompt
         self.api_key = None

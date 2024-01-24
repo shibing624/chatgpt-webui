@@ -29,6 +29,7 @@ class LLaMAClient(BaseLLMModel):
 
     def _get_chat_input(self):
         messages = []
+        logger.debug(f"{self.history}")
         for conv in self.history:
             if conv["role"] == "system":
                 messages.append({'role': 'system', 'content': conv["content"]})

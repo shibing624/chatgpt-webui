@@ -64,12 +64,14 @@ class ChatGLMClient(BaseLLMModel):
 
     def get_answer_at_once(self):
         history, query = self._get_glm_style_input()
+        logger.debug(f"{history}")
         response, _ = self.CHATGLM_MODEL.chat(
             self.CHATGLM_TOKENIZER, query, history=history)
         return response, len(response)
 
     def get_answer_stream_iter(self):
         history, query = self._get_glm_style_input()
+        logger.debug(f"{history}")
         for response, history in self.CHATGLM_MODEL.stream_chat(
                 self.CHATGLM_TOKENIZER,
                 query,
