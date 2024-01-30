@@ -75,24 +75,20 @@ CHUANHU_DESCRIPTION = i18n("GitHub: [shibing624/chatgpt-webui](https://github.co
 ONLINE_MODELS = [
     "gpt-3.5-turbo",
     "gpt-3.5-turbo-16k",
-    "gpt-3.5-turbo-0301",
-    "gpt-3.5-turbo-0613",
     "gpt-3.5-turbo-1106",
     "gpt-4",
     "gpt-4-32k",
-    "gpt-4-1106-preview",
+    "gpt-4-turbo-preview",
     "gpt-4-vision-preview",
 ]
 
 MODEL_TOKEN_LIMIT = {
     "gpt-3.5-turbo": 4096,
     "gpt-3.5-turbo-16k": 16384,
-    "gpt-3.5-turbo-0301": 4096,
-    "gpt-3.5-turbo-0613": 4096,
     "gpt-3.5-turbo-1106": 16384,
     "gpt-4": 8192,
     "gpt-4-32k": 32768,
-    "gpt-4-1106-preview": 128000,
+    "gpt-4-turbo-preview": 128000,
     "gpt-4-vision-preview": 128000,
 }
 
