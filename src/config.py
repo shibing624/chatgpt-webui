@@ -197,3 +197,11 @@ if user_avatar == "" or user_avatar == "none" or user_avatar is None:
     user_avatar = None
 elif user_avatar == "default":
     user_avatar = os.path.join(pwd_path, "../assets/user.png")
+
+websearch_engine = config.get("websearch_engine", "duckduckgo")
+# 设置websearch engine api key
+bing_search_api_key = os.environ.get("BING_SEARCH_API_KEY", config.get("bing_search_api_key", ""))
+google_search_api_key = os.environ.get("GOOGLE_SEARCH_API_KEY", config.get("google_search_api_key", ""))
+google_search_cx = os.environ.get("GOOGLE_SEARCH_CX", config.get("google_search_cx", ""))
+serper_search_api_key = os.environ.get("SERPER_SEARCH_API_KEY", config.get("serper_search_api_key", ""))
+searchapi_api_key = os.environ.get("SEARCHAPI_API_KEY", config.get("searchapi_api_key", ""))

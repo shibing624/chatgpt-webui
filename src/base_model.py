@@ -2,16 +2,23 @@ import os
 import shutil
 import traceback
 from enum import Enum
-from itertools import islice
 
 import commentjson as json
 import gradio as gr
 import tiktoken
-import urllib3
 from loguru import logger
 
 from src import shared
-from src.config import retrieve_proxy, local_embedding
+from src.config import (
+    retrieve_proxy,
+    local_embedding,
+    websearch_engine,
+    bing_search_api_key,
+    google_search_api_key,
+    serper_search_api_key,
+    searchapi_api_key,
+    google_search_cx,
+)
 from src.index_func import construct_index
 from src.presets import (
     MODEL_TOKEN_LIMIT,
@@ -26,6 +33,13 @@ from src.presets import (
     INITIAL_SYSTEM_PROMPT,
     PROMPT_TEMPLATE,
     WEBSEARCH_PTOMPT_TEMPLATE,
+)
+from src.search_engine import (
+    search_with_google,
+    search_with_duckduckgo,
+    search_with_bing,
+    search_with_searchapi,
+    search_with_serper,
 )
 from src.utils import (
     i18n,
@@ -307,23 +321,24 @@ class BaseLLMModel:
                     .replace("{reply_language}", reply_language)
                 )
         elif use_websearch:
-            from duckduckgo_search import DDGS
-            search_results = []
-            with DDGS() as ddgs:
-                ddgs_gen = ddgs.text(fake_inputs, backend="lite")
-                for r in islice(ddgs_gen, 10):
-                    search_results.append(r)
+            if websearch_engine == "google":
+                search_results = search_with_google(fake_inputs, google_search_api_key, google_search_cx)
+            elif websearch_engine == "bing":
+                search_results = search_with_bing(fake_inputs, bing_search_api_key)
+            elif websearch_engine == "searchapi":
+                search_results = search_with_searchapi(fake_inputs, searchapi_api_key)
+            elif websearch_engine == "serper":
+                search_results = search_with_serper(fake_inputs, serper_search_api_key)
+            else:
+                search_results = search_with_duckduckgo(fake_inputs)
             reference_results = []
             for idx, result in enumerate(search_results):
                 logger.debug(f"搜索结果{idx + 1}：{result}")
-                domain_name = urllib3.util.parse_url(result["href"]).host
-                reference_results.append([result["body"], result["href"]])
+                reference_results.append([result["snippet"], result["url"]])
                 display_append.append(
-                    # f"{idx+1}. [{domain_name}]({result['href']})\n"
-                    f"<a href=\"{result['href']}\" target=\"_blank\">{idx + 1}.&nbsp;{result['title']}</a>"
+                    f"<a href=\"{result['url']}\" target=\"_blank\">{idx + 1}.&nbsp;{result['name']}</a>"
                 )
             reference_results = add_source_numbers(reference_results)
-            # display_append = "<ol>\n\n" + "".join(display_append) + "</ol>"
             display_append = (
                     '<div class = "source-a">' + "".join(display_append) + "</div>"
             )
@@ -357,22 +372,9 @@ class BaseLLMModel:
     ):
         status_text = "开始生成回答……"
         if type(inputs) == list:
-            logger.info(
-                "用户"
-                + f"{self.user_name}"
-                + "的输入为："
-                + "("
-                + str(len(inputs) - 1)
-                + " images) "
-                + f"{inputs[0]['text']}"
-            )
+            logger.info(f"用户{self.user_name}的输入为：{inputs[0]['text']}")
         else:
-            logger.info(
-                "用户"
-                + f"{self.user_name}"
-                + "的输入为："
-                + f"{inputs}"
-            )
+            logger.info(f"用户{self.user_name}的输入为：{inputs}")
         if should_check_token_count:
             if type(inputs) == list:
                 yield chatbot + [(inputs[0]["text"], "")], status_text
@@ -446,7 +448,7 @@ class BaseLLMModel:
             yield chatbot, status_text
 
         if len(self.history) > 1 and self.history[-1]["content"] != inputs:
-            logger.info("回答为：" + f"{self.history[-1]['content']}")
+            logger.info(f"回答为：{self.history[-1]['content']}")
 
         if limited_context:
             self.history = []

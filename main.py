@@ -37,13 +37,13 @@ from src.presets import (
     HISTORY_NAME_METHODS,
     small_and_beautiful_theme,
     CONCURRENT_COUNT,
-    CHUANHU_TITLE,
+    TITLE,
     HIDE_MY_KEY,
     DEFAULT_MODEL,
     REPLY_LANGUAGES,
     INITIAL_SYSTEM_PROMPT,
     ENABLE_STREAMING_OPTION,
-    CHUANHU_DESCRIPTION,
+    DESCRIPTION,
     favicon_path,
     API_HOST,
     HISTORY_DIR,
@@ -117,7 +117,7 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
 
     with gr.Row(elem_id="chuanhu-header"):
         gr.HTML(get_html("header_title.html").format(
-            app_title=CHUANHU_TITLE), elem_id="app-title")
+            app_title=TITLE), elem_id="app-title")
         status_display = gr.Markdown(get_geoip, elem_id="status-display")
     with gr.Row(elem_id="float-display"):
         user_info = gr.Markdown(
@@ -413,7 +413,7 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
                             )
                     with gr.Tab(label=i18n("关于")):
                         gr.Markdown("#### " + i18n("ChatGPT WebUI"))
-                        gr.Markdown(CHUANHU_DESCRIPTION)
+                        gr.Markdown(DESCRIPTION)
 
     with gr.Row(elem_id="popup-wrapper"):
         with gr.Box(elem_id="chuanhu-popup"):
@@ -481,7 +481,7 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
 
                     with gr.Tab(label=i18n("关于"), elem_id="about-tab"):
                         gr.Markdown("# " + i18n("ChatGPT WebUI"))
-                        gr.Markdown(CHUANHU_DESCRIPTION, elem_id="description")
+                        gr.Markdown(DESCRIPTION, elem_id="description")
 
             with gr.Box(elem_id="web-config", visible=False):
                 gr.HTML(get_html('web_config.html').format(
@@ -505,6 +505,8 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
             with gr.Box(elem_id="fake-gradio-components", visible=False):
                 changeSingleSessionBtn = gr.Button(
                     visible=False, elem_classes="invisible-btn", elem_id="change-single-session-btn")
+                changeOnlineSearchBtn = gr.Button(
+                    visible=False, elem_classes="invisible-btn", elem_id="change-online-search-btn")
                 historySelectBtn = gr.Button(
                     visible=False, elem_classes="invisible-btn", elem_id="history-select-btn")  # Not used
 
@@ -774,6 +776,12 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
         outputs=[single_turn_checkbox],
         _js='(a)=>{return bgChangeSingleSession(a);}'
     )
+    changeOnlineSearchBtn.click(
+        fn=lambda value: gr.Checkbox.update(value=value),
+        inputs=[use_websearch_checkbox],
+        outputs=[use_websearch_checkbox],
+        _js='(a)=>{return bgChangeOnlineSearch(a);}'
+    )
     historySelectBtn.click(  # This is an experimental feature... Not actually used.
         fn=load_chat_history,
         inputs=[current_model, historySelectList],
@@ -783,7 +791,7 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
         _js='(a,b)=>{return bgSelectHistory(a,b);}'
     )
 
-demo.title = CHUANHU_TITLE
+demo.title = TITLE
 
 if __name__ == "__main__":
     reload_javascript()
