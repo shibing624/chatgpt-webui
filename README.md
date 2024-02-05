@@ -21,7 +21,7 @@
 
 ## ✨ Features
 本项目基于 [ChuanhuChatGPT](https://github.com/GaiZhenbiao/ChuanhuChatGPT) 简化而来，主要改动如下：
-1. 简化了WebUI页面，只保留核心的ChatGPT对话(LLM)、文档检索对话（RAG）功能，去除了在线搜索/midjourney等功能
+1. 简化了WebUI页面，只保留核心的ChatGPT对话(LLM)、文档检索对话（RAG）功能，去除了midjourney等功能
 2. 重构了代码逻辑和结构，规范python语法，轻量化项目依赖库
 3. 保留本地大语言模型对话，方便扩展本地模型
 4. 支持nginx反向代理，静态文件使用相对路径，方便部署
@@ -29,7 +29,7 @@
    - 引入jieba分词的rank_BM25，提升对query关键词的字面匹配，使用字面相似度+sentence embedding向量相似度加权获取corpus候选集
    - RAG底模优化，使用基于RAG微调的模型
    - Chinese chunk切分优化
-
+6. 优化了在线搜索功能，支持DuckDuckGo、Google、Bing、Serper等搜索引擎，提升搜索准确率
 
 ## 支持模型
 

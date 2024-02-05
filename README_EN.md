@@ -25,6 +25,7 @@ This project is based on [ChuanhuChatGPT](https://github.com/GaiZhenbiao/Chuanhu
 2. Refactored the code logic and structure, standardized Python syntax, and lightweight project dependency libraries;
 3. Keep the local large language model dialogue for easy expansion of the local model;
 4. Support nginx reverse proxy, use relative paths for static files, and facilitate deployment.
+5. Optimized the online search function, supporting search engines such as DuckDuckGo, Google, Bing, Serper, etc., to improve the accuracy of searches.
 
 ## Usage Tips
 
