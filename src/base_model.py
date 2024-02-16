@@ -226,10 +226,7 @@ class BaseLLMModel:
         if fake_input is not None:
             self.history[-2] = construct_user(fake_input)
         chatbot[-1] = (chatbot[-1][0], ai_reply + display_append)
-        if fake_input is not None:
-            self.all_token_counts[-1] += count_token(construct_assistant(ai_reply))
-        else:
-            self.all_token_counts[-1] = total_token_count - sum(self.all_token_counts)
+        self.all_token_counts[-1] += count_token(construct_assistant(ai_reply))
         status_text = self.token_message()
         return chatbot, status_text
 
@@ -456,18 +453,18 @@ class BaseLLMModel:
 
         max_token = self.token_upper_limit - TOKEN_OFFSET
 
-        if sum(self.all_token_counts) > max_token and should_check_token_count:
+        if sum(self.all_token_counts) > max_token and len(self.history) > 2 and should_check_token_count:
             count = 0
             while (
                     sum(self.all_token_counts)
                     > self.token_upper_limit * REDUCE_TOKEN_FACTOR
-                    and sum(self.all_token_counts) > 0
+                    and sum(self.all_token_counts) > 0 and len(self.history) > 0
             ):
                 count += 1
-                del self.all_token_counts[0]
+                del self.all_token_counts[:1]
                 del self.history[:2]
-            logger.info(status_text)
             status_text = f"为了防止token超限，模型忘记了早期的 {count} 轮对话"
+            logger.info(status_text)
             yield chatbot, status_text
 
     def retry(
@@ -624,7 +621,7 @@ class BaseLLMModel:
     def delete_first_conversation(self):
         if self.history:
             del self.history[:2]
-            del self.all_token_counts[0]
+            del self.all_token_counts[:1]
         return self.token_message()
 
     def delete_last_conversation(self, chatbot):
