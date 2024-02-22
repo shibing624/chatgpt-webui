@@ -42,6 +42,39 @@ from src.utils import (
 )
 
 
+def decode_chat_response(response):
+    try:
+        error_msg = ""
+        for chunk in response.iter_lines():
+            if chunk:
+                try:
+                    chunk = chunk.decode('utf-8')
+                    chunk_length = len(chunk)
+                    chunk = json.loads(chunk[6:])
+
+                    if chunk_length > 6 and "delta" in chunk["choices"][0]:
+                        if "finish_reason" in chunk["choices"][0]:
+                            finish_reason = chunk["choices"][0]["finish_reason"]
+                        else:
+                            finish_reason = chunk["finish_reason"]
+                        if finish_reason == "stop":
+                            break
+                        yield chunk["choices"][0]["delta"]["content"]
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON parsing error: {str(e)}, content received: {chunk}")
+                    error_msg += chunk
+                    continue
+                except Exception as e:
+                    logger.error(f"Error while processing chunk: {str(e)}, Content: {chunk}")
+                    continue
+        if error_msg and not error_msg.endswith("[DONE]"):
+            raise Exception(error_msg)
+    except GeneratorExit:
+        logger.warning("decode_chat_response: GeneratorExit")
+    except Exception as e:
+        logger.error(f"Error in decode_chat_response: {str(e)}")
+
+
 class OpenAIClient(BaseLLMModel):
     def __init__(
             self,
@@ -68,11 +101,14 @@ class OpenAIClient(BaseLLMModel):
             raise ValueError("API key is not set")
         response = self._get_response(stream=True)
         if response is not None:
-            iter = self._decode_chat_response(response)
+            iter = decode_chat_response(response)
             partial_text = ""
-            for i in iter:
-                partial_text += i
-                yield partial_text
+            try:
+                for i in iter:
+                    partial_text += i
+                    yield partial_text
+            except Exception as e:
+                logger.error(f"Error while generating answers: {str(e)}")
         else:
             yield STANDARD_ERROR_MSG + GENERAL_ERROR_MSG
 
@@ -204,37 +240,6 @@ class OpenAIClient(BaseLLMModel):
                 f"API request failed with status code {response.status_code}: {response.text}"
             )
 
-    def _decode_chat_response(self, response):
-        error_msg = ""
-        for chunk in response.iter_lines():
-            if chunk:
-                chunk = chunk.decode()
-                chunk_length = len(chunk)
-                try:
-                    chunk = json.loads(chunk[6:])
-                except Exception as e:
-                    print(i18n("JSON解析错误,收到的内容: ") + f"{chunk}")
-                    error_msg += chunk
-                    continue
-                try:
-                    if chunk_length > 6 and "delta" in chunk["choices"][0]:
-                        if "finish_reason" in chunk["choices"][0]:
-                            finish_reason = chunk["choices"][0]["finish_reason"]
-                        else:
-                            finish_reason = chunk["finish_reason"]
-                        if finish_reason == "stop":
-                            break
-                        try:
-                            yield chunk["choices"][0]["delta"]["content"]
-                        except Exception as e:
-                            logger.error(f"Error: {e}")
-                            continue
-                except:
-                    print(f"ERROR: {chunk}")
-                    continue
-        if error_msg and not error_msg == "data: [DONE]":
-            raise Exception(error_msg)
-
     def set_key(self, new_access_key):
         ret = super().set_key(new_access_key)
         self._refresh_header()
@@ -320,11 +325,14 @@ class OpenAIVisionClient(BaseLLMModel):
     def get_answer_stream_iter(self):
         response = self._get_response(stream=True)
         if response is not None:
-            iter = self._decode_chat_response(response)
+            iter = decode_chat_response(response)
             partial_text = ""
-            for i in iter:
-                partial_text += i
-                yield partial_text
+            try:
+                for i in iter:
+                    partial_text += i
+                    yield partial_text
+            except Exception as e:
+                logger.error(f"Error while generating answers: {str(e)}")
         else:
             yield STANDARD_ERROR_MSG + GENERAL_ERROR_MSG
 
@@ -518,39 +526,6 @@ class OpenAIVisionClient(BaseLLMModel):
             raise Exception(
                 f"API request failed with status code {response.status_code}: {response.text}"
             )
-
-    def _decode_chat_response(self, response):
-        error_msg = ""
-        for chunk in response.iter_lines():
-            if chunk:
-                chunk = chunk.decode()
-                chunk_length = len(chunk)
-                try:
-                    chunk = json.loads(chunk[6:])
-                except:
-                    print(i18n("JSON解析错误,收到的内容: ") + f"{chunk}")
-                    error_msg += chunk
-                    continue
-                try:
-                    if chunk_length > 6 and "delta" in chunk["choices"][0]:
-                        if "finish_details" in chunk["choices"][0]:
-                            finish_reason = chunk["choices"][0]["finish_details"]
-                        elif "finish_reason" in chunk["choices"][0]:
-                            finish_reason = chunk["choices"][0]["finish_reason"]
-                        else:
-                            finish_reason = chunk["finish_details"]
-                        if finish_reason == "stop":
-                            break
-                        try:
-                            yield chunk["choices"][0]["delta"]["content"]
-                        except Exception as e:
-                            # logger.error(f"Error: {e}")
-                            continue
-                except:
-                    print(f"ERROR: {chunk}")
-                    continue
-        if error_msg and not error_msg == "data: [DONE]":
-            raise Exception(error_msg)
 
     def set_key(self, new_access_key):
         ret = super().set_key(new_access_key)
