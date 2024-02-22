@@ -43,29 +43,35 @@ from src.utils import (
 
 
 def decode_chat_response(response):
-    error_msg = ""
-    for chunk in response.iter_lines():
-        if chunk:
-            try:
-                chunk = chunk.decode('utf-8')
-                chunk_length = len(chunk)
-                # 包含有效JSON的字符串通常长度大于6
-                if chunk_length > 6:
+    try:
+        error_msg = ""
+        for chunk in response.iter_lines():
+            if chunk:
+                try:
+                    chunk = chunk.decode('utf-8')
+                    chunk_length = len(chunk)
                     chunk = json.loads(chunk[6:])
-                    if "delta" in chunk["choices"][0]:
-                        finish_reason = chunk["choices"][0].get("finish_reason", None)
+
+                    if chunk_length > 6 and "delta" in chunk["choices"][0]:
+                        if "finish_reason" in chunk["choices"][0]:
+                            finish_reason = chunk["choices"][0]["finish_reason"]
+                        else:
+                            finish_reason = chunk["finish_reason"]
                         if finish_reason == "stop":
                             break
                         yield chunk["choices"][0]["delta"]["content"]
-            except json.JSONDecodeError as e:
-                logger.error(f"JSON parsing error: {str(e)}, content received: {chunk}")
-                error_msg += chunk
-                continue
-            except Exception as e:
-                logger.error(f"Error while processing chunk: {str(e)}, Content: {chunk}")
-                continue
-    if error_msg and not error_msg.endswith("[DONE]"):
-        raise Exception(error_msg)
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON parsing error: {str(e)}, content received: {chunk}")
+                    error_msg += chunk
+                    continue
+                except Exception as e:
+                    logger.error(f"Error while processing chunk: {str(e)}, Content: {chunk}")
+                    continue
+        if error_msg and not error_msg.endswith("[DONE]"):
+            raise Exception(error_msg)
+    except Exception as e:
+        logger.error(f"Error in decode_chat_response: {str(e)}")
+        raise Exception("Error in decode_chat_response")
 
 
 class OpenAIClient(BaseLLMModel):
@@ -94,9 +100,9 @@ class OpenAIClient(BaseLLMModel):
             raise ValueError("API key is not set")
         response = self._get_response(stream=True)
         if response is not None:
-            stream_iter = decode_chat_response(response)
-            partial_text = ""
             try:
+                stream_iter = decode_chat_response(response)
+                partial_text = ""
                 for chunk in stream_iter:
                     partial_text += chunk
                     yield partial_text
@@ -319,9 +325,9 @@ class OpenAIVisionClient(BaseLLMModel):
     def get_answer_stream_iter(self):
         response = self._get_response(stream=True)
         if response is not None:
-            stream_iter = decode_chat_response(response)
-            partial_text = ""
             try:
+                stream_iter = decode_chat_response(response)
+                partial_text = ""
                 for chunk in stream_iter:
                     partial_text += chunk
                     yield partial_text
