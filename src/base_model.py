@@ -203,16 +203,14 @@ class BaseLLMModel:
         for partial_text in stream_iter:
             if type(partial_text) == tuple:
                 partial_text, token_increment = partial_text
-                chatbot[-1] = (chatbot[-1][0], partial_text + display_append)
-                self.all_token_counts[-1] += token_increment
-                status_text = self.token_message()
-                yield get_return_value()
             elif partial_text == STANDARD_ERROR_MSG + GENERAL_ERROR_MSG:
-                chatbot[-1] = (chatbot[-1][0], partial_text)
-                self.all_token_counts[-1] += token_increment
-                status_text = self.token_message()
+                status_text = STANDARD_ERROR_MSG + GENERAL_ERROR_MSG
                 yield get_return_value()
                 break
+            chatbot[-1] = (chatbot[-1][0], partial_text + display_append)
+            self.all_token_counts[-1] += token_increment
+            status_text = self.token_message()
+            yield get_return_value()
             if self.interrupted:
                 self.recover()
                 break
