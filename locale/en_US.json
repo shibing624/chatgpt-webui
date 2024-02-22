@@ -55,7 +55,7 @@
     "JSON解析错误,收到的内容: ": "JSON parsing error, received content: ",
     "模型设置为了：": "Model is set to: ",
     "☹️发生了错误：": "☹️Error: ",
-    "获取对话时发生错误，请查看后台日志": "Error occurred when getting dialogue, check the background log",
+    "获取对话时发生错误，请重试": "Error occurred when getting dialogue, check the background log",
     "请检查网络连接，或者API-Key是否有效。": "Check the network connection or whether the API-Key is valid.",
     "连接超时，无法获取对话。": "Connection timed out, unable to get dialogue.",
     "读取超时，无法获取对话。": "Read timed out, unable to get dialogue.",
