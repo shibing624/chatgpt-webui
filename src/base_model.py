@@ -26,6 +26,7 @@ from src.presets import (
     TOKEN_OFFSET,
     REDUCE_TOKEN_FACTOR,
     STANDARD_ERROR_MSG,
+    GENERAL_ERROR_MSG,
     NO_APIKEY_MSG,
     BILLING_NOT_APPLICABLE_MSG,
     NO_INPUT_MSG,
@@ -202,10 +203,16 @@ class BaseLLMModel:
         for partial_text in stream_iter:
             if type(partial_text) == tuple:
                 partial_text, token_increment = partial_text
-            chatbot[-1] = (chatbot[-1][0], partial_text + display_append)
-            self.all_token_counts[-1] += token_increment
-            status_text = self.token_message()
-            yield get_return_value()
+                chatbot[-1] = (chatbot[-1][0], partial_text + display_append)
+                self.all_token_counts[-1] += token_increment
+                status_text = self.token_message()
+                yield get_return_value()
+            elif partial_text == STANDARD_ERROR_MSG + GENERAL_ERROR_MSG:
+                chatbot[-1] = (chatbot[-1][0], partial_text)
+                self.all_token_counts[-1] += token_increment
+                status_text = self.token_message()
+                yield get_return_value()
+                break
             if self.interrupted:
                 self.recover()
                 break
