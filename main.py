@@ -25,6 +25,7 @@ from src.config import (
     bot_avatar,
     update_doc_config,
 )
+from src.gradio_patch import reg_patch
 from src.models import get_model
 from src.overwrites import (
     postprocess,
@@ -102,11 +103,15 @@ from src.utils import (
     handle_summarize_index,
 )
 
+reg_patch()
+
 gr.Chatbot._postprocess_chat_messages = postprocess_chat_messages
 gr.Chatbot.postprocess = postprocess
 
 with gr.Blocks(theme=small_and_beautiful_theme) as demo:
     user_name = gr.Textbox("", visible=False)
+    # 激活/logout路由
+    logout_hidden_btn = gr.LogoutButton(visible=False)
     promptTemplates = gr.State(load_template(get_template_names()[0], mode=2))
     user_question = gr.State("")
     assert type(my_api_key) == str
@@ -448,6 +453,7 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
                             "单轮对话"), value=False, elem_classes="switch-checkbox", elem_id="gr-single-session-cb",
                             visible=False)
                         # checkUpdateBtn = gr.Button(i18n("🔄 检查更新..."), visible=check_update)
+                        logout_btn = gr.Button(i18n("退出用户"), variant="primary", visible=authflag)
 
                     with gr.Tab(i18n("网络")):
                         gr.Markdown(
@@ -530,7 +536,7 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
                             current_model.max_generation_token, current_model.presence_penalty,
                             current_model.frequency_penalty, current_model.logit_bias, current_model.user_identifier]
         return user_info, user_name, current_model, toggle_like_btn_visibility(
-            DEFAULT_MODEL), *loaded_stuff, init_history_list(user_name)
+            DEFAULT_MODEL), *loaded_stuff, init_history_list(user_name, prepend=current_model.history_file_path[:-5])
 
 
     demo.load(create_greeting, inputs=None, outputs=[
@@ -688,7 +694,7 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
                                 [current_model, status_display, chatbot], show_progress=True)
 
     # Template
-    systemPromptTxt.input(set_system_prompt, [
+    systemPromptTxt.change(set_system_prompt, [
         current_model, systemPromptTxt], None)
     templateRefreshBtn.click(get_template_dropdown, None, [
         templateFileSelectDropdown])
@@ -789,6 +795,12 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
                  n_choices_slider, stop_sequence_txt, max_context_length_slider, max_generation_slider,
                  presence_penalty_slider, frequency_penalty_slider, logit_bias_txt, user_identifier_txt],
         _js='(a,b)=>{return bgSelectHistory(a,b);}'
+    )
+    logout_btn.click(
+        fn=None,
+        inputs=[],
+        outputs=[],
+        _js='self.location="/logout"'
     )
 
 demo.title = TITLE

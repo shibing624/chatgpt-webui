@@ -490,13 +490,13 @@ def get_history_list(user_name=""):
     history_names = get_history_names(user_name)
     return gr.Radio.update(choices=history_names)
 
-
-def init_history_list(user_name=""):
+def init_history_list(user_name="", prepend=None):
     history_names = get_history_names(user_name)
+    if prepend is not None and prepend not in history_names:
+        history_names.insert(0, prepend)
     return gr.Radio.update(
         choices=history_names, value=history_names[0] if history_names else ""
     )
-
 
 def filter_history(user_name, keyword):
     history_names = get_history_names(user_name)

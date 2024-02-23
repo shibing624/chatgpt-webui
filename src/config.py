@@ -68,7 +68,7 @@ authflag = len(auth_list) > 0  # 是否开启认证的状态值，改为判断au
 api_host = config.get("openai_api_base", None)
 if api_host is not None:
     shared.state.set_api_host(api_host)
-    os.environ["OPENAI_API_BASE"] = f"{api_host}/v1"
+    logger.info(f"OpenAI API Base set to: {os.environ['OPENAI_API_BASE']}")
 
 
 @contextmanager
