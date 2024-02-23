@@ -46,11 +46,15 @@ def decode_chat_response(response):
         error_msg = ""
         for chunk in response.iter_lines():
             if chunk:
+                chunk = chunk.decode()
+                chunk_length = len(chunk)
                 try:
-                    chunk = chunk.decode('utf-8')
-                    chunk_length = len(chunk)
                     chunk = json.loads(chunk[6:])
-
+                except:
+                    logger.error(i18n("JSON解析错误,收到的内容: ") + f"{chunk}")
+                    error_msg += chunk
+                    continue
+                try:
                     if chunk_length > 6 and "delta" in chunk["choices"][0]:
                         if "finish_reason" in chunk["choices"][0]:
                             finish_reason = chunk["choices"][0]["finish_reason"]
@@ -58,13 +62,13 @@ def decode_chat_response(response):
                             finish_reason = chunk["finish_reason"]
                         if finish_reason == "stop":
                             break
-                        yield chunk["choices"][0]["delta"]["content"]
-                except json.JSONDecodeError as e:
-                    logger.error(f"JSON parsing error: {str(e)}, content received: {chunk}")
-                    error_msg += chunk
-                    continue
-                except Exception as e:
-                    logger.error(f"Error while processing chunk: {str(e)}, Content: {chunk}")
+                        try:
+                            yield chunk["choices"][0]["delta"].get("content", "")
+                        except Exception as e:
+                            logger.error(f"Error: {e}")
+                            continue
+                except Exception as ee:
+                    logger.error(f"ERROR: {chunk}, {ee}")
                     continue
         if error_msg and not error_msg.endswith("[DONE]"):
             raise Exception(error_msg)
@@ -454,8 +458,7 @@ class OpenAIVisionClient(BaseLLMModel):
                   self.images]
             ]
             self.images = []
-        logger.debug(colorama.Fore.YELLOW +
-                     f"{history}" + colorama.Fore.RESET)
+        # logger.debug(colorama.Fore.YELLOW + f"{history}" + colorama.Fore.RESET)
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {openai_api_key}",
