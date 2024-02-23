@@ -1,11 +1,12 @@
 {
-    "openai_api_key": "sk-xxx",
-    "openai_api_base": "https://xxx",
+    "openai_api_key": "sk-xx",
+    "openai_api_base": "https://xx/v1",
     "language": "auto",
     "hide_history_when_not_logged_in": true,
     "default_model": "gpt-3.5-turbo",
     "multi_api_key": false,
     "server_name": "0.0.0.0",
     "server_port": 8009,
+    "autobrowser": false,
     "share": false
 }
