@@ -18,8 +18,7 @@ if os.path.exists(config_file):
         config = json.load(f)
 if config:
     logger.info(f"加载配置文件成功, config: {config}")
-lang_config = config.get("language", "auto")
-language = os.environ.get("LANGUAGE", lang_config)
+language = config.get("language", "") or os.environ.get("LANGUAGE", "auto")
 
 hide_history_when_not_logged_in = config.get("hide_history_when_not_logged_in", False)
 show_api_billing = config.get("show_api_billing", False)
@@ -40,11 +39,8 @@ if "available_models" in config:
     presets.MODELS = config["available_models"]
     logger.info(f"已设置可用模型：{config['available_models']}")
 
-## 处理docker if we are running in Docker
+# 处理docker if we are running in Docker
 dockerflag = config.get("dockerflag", False)
-## 处理 api-key 以及 允许的用户列表
-my_api_key = config.get("openai_api_key", "")
-my_api_key = my_api_key or os.environ.get("OPENAI_API_KEY", "")
 
 xmchat_api_key = config.get("xmchat_api_key", "")
 minimax_api_key = config.get("minimax_api_key", "")
@@ -52,7 +48,7 @@ minimax_group_id = config.get("minimax_group_id", "")
 
 usage_limit = config.get("usage_limit", 120)
 
-## 多账户机制
+# 多账户机制
 multi_api_key = config.get("multi_api_key", False)  # 是否开启多账户机制
 if multi_api_key:
     api_key_list = config.get("api_key_list", [])
@@ -69,7 +65,8 @@ api_host = config.get("openai_api_base", None)
 if api_host is not None:
     shared.state.set_api_host(api_host)
     logger.info(f"OpenAI API Base set to: {os.environ['OPENAI_API_BASE']}")
-
+# 处理 api-key 以及 允许的用户列表
+my_api_key = config.get("openai_api_key", "") or os.environ.get("OPENAI_API_KEY", "")
 
 @contextmanager
 def retrieve_openai_api(api_key=None):
@@ -79,7 +76,7 @@ def retrieve_openai_api(api_key=None):
         yield api_key
 
 
-## 处理代理：
+# 处理代理：
 http_proxy = config.get("http_proxy", "")
 https_proxy = config.get("https_proxy", "")
 http_proxy = os.environ.get("HTTP_PROXY", http_proxy)
@@ -153,7 +150,7 @@ else:
         {"left": "\\[", "right": "\\]", "display": True},
     ]
 
-## 处理advance docs
+# 处理advance docs
 advance_docs = defaultdict(lambda: defaultdict(dict))
 advance_docs.update(config.get("advance_docs", {}))
 
@@ -163,7 +160,7 @@ def update_doc_config(two_column_pdf):
     advance_docs["pdf"]["two_column"] = two_column_pdf
 
 
-## 处理gradio.launch参数
+# 处理gradio.launch参数
 server_name = config.get("server_name", None)
 server_port = config.get("server_port", None)
 if server_name is None:
@@ -200,8 +197,10 @@ elif user_avatar == "default":
 
 websearch_engine = config.get("websearch_engine", "duckduckgo")
 # 设置websearch engine api key
-bing_search_api_key = os.environ.get("BING_SEARCH_API_KEY", config.get("bing_search_api_key", ""))
-google_search_api_key = os.environ.get("GOOGLE_SEARCH_API_KEY", config.get("google_search_api_key", ""))
-google_search_cx = os.environ.get("GOOGLE_SEARCH_CX", config.get("google_search_cx", ""))
-serper_search_api_key = os.environ.get("SERPER_SEARCH_API_KEY", config.get("serper_search_api_key", ""))
-searchapi_api_key = os.environ.get("SEARCHAPI_API_KEY", config.get("searchapi_api_key", ""))
+bing_search_api_key = config.get("bing_search_api_key", "") or os.environ.get("BING_SEARCH_API_KEY", "")
+google_search_api_key = config.get("google_search_api_key", "") or os.environ.get("GOOGLE_SEARCH_API_KEY", "")
+google_search_cx = config.get("google_search_cx", "") or os.environ.get("GOOGLE_SEARCH_CX", "")
+serper_search_api_key = config.get("serper_search_api_key", "") or os.environ.get("SERPER_SEARCH_API_KEY", "")
+searchapi_api_key = config.get("searchapi_api_key", "") or os.environ.get("SEARCHAPI_API_KEY", "")
+
+autobrowser = config.get("autobrowser", True)

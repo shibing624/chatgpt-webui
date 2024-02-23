@@ -23,6 +23,7 @@ from src.config import (
     latex_delimiters_set,
     user_avatar,
     bot_avatar,
+    autobrowser,
     update_doc_config,
 )
 from src.gradio_patch import reg_patch
@@ -276,6 +277,7 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
                                 type="password",
                                 visible=not HIDE_MY_KEY,
                                 label="API-Key",
+                                elem_id="api-key"
                             )
                             if multi_api_key:
                                 usageTxt = gr.Markdown(i18n(
@@ -816,5 +818,5 @@ if __name__ == "__main__":
         blocked_paths=[config_file],
         auth=auth_from_conf if authflag else None,
         favicon_path=favicon_path,
-        inbrowser=not dockerflag,
+        inbrowser=autobrowser and not dockerflag,
     )

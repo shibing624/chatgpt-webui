@@ -34,5 +34,7 @@
      "server_name": "0.0.0.0",
      "server_port": 7860,
     // 如果要share到gradio，设置为true
-     "share": false
+     "share": false,
+    //如果不想自动打开浏览器，设置为false
+    "autobrowser": false
 }

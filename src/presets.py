@@ -50,6 +50,7 @@ favicon_path = os.path.join(pwd_path, "../assets/favicon.ico")
 # 错误信息
 STANDARD_ERROR_MSG = i18n("☹️发生了错误：")  # 错误信息的标准前缀
 GENERAL_ERROR_MSG = i18n("获取对话时发生错误，请重试")
+GENERATE_ERROR_MSG = i18n("生成时发生错误，请重试")
 ERROR_RETRIEVE_MSG = i18n("请检查网络连接，或者API-Key是否有效。")
 CONNECTION_TIMEOUT_MSG = i18n("连接超时，无法获取对话。")  # 连接超时
 READ_TIMEOUT_MSG = i18n("读取超时，无法获取对话。")  # 读取超时

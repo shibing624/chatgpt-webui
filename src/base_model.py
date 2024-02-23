@@ -27,6 +27,7 @@ from src.presets import (
     REDUCE_TOKEN_FACTOR,
     STANDARD_ERROR_MSG,
     GENERAL_ERROR_MSG,
+    GENERATE_ERROR_MSG,
     NO_APIKEY_MSG,
     BILLING_NOT_APPLICABLE_MSG,
     NO_INPUT_MSG,
@@ -202,8 +203,8 @@ class BaseLLMModel:
         for partial_text in stream_iter:
             if type(partial_text) == tuple:
                 partial_text, token_increment = partial_text
-            elif partial_text == STANDARD_ERROR_MSG + GENERAL_ERROR_MSG:
-                status_text = STANDARD_ERROR_MSG + GENERAL_ERROR_MSG
+            elif partial_text == GENERATE_ERROR_MSG:
+                status_text = GENERATE_ERROR_MSG
                 yield get_return_value()
                 break
             chatbot[-1] = (chatbot[-1][0], partial_text + display_append)
