@@ -483,7 +483,7 @@ def get_history_names(user_name=""):
 
 def get_first_history_name(user_name=""):
     history_names = get_history_names(user_name)
-    return history_names[0] if history_names else None
+    return history_names[0] if history_names else ""
 
 
 def get_history_list(user_name=""):
@@ -491,9 +491,9 @@ def get_history_list(user_name=""):
     return gr.Radio.update(choices=history_names)
 
 
-def init_history_list(user_name="", prepend=None):
+def init_history_list(user_name="", prepend=""):
     history_names = get_history_names(user_name)
-    if prepend is not None and prepend not in history_names:
+    if prepend and prepend not in history_names:
         history_names.insert(0, prepend)
     return gr.Radio.update(
         choices=history_names, value=history_names[0] if history_names else ""

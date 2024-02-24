@@ -537,9 +537,8 @@ with gr.Blocks(theme=small_and_beautiful_theme) as demo:
                             current_model.n_choices, current_model.stop_sequence, current_model.token_upper_limit,
                             current_model.max_generation_token, current_model.presence_penalty,
                             current_model.frequency_penalty, current_model.logit_bias, current_model.user_identifier]
-        prepend_history_files = current_model.history_file_path[:-5] if current_model.history_file_path else None
         return user_info, user_name, current_model, toggle_like_btn_visibility(
-            DEFAULT_MODEL), *loaded_stuff, init_history_list(user_name, prepend=prepend_history_files)
+            DEFAULT_MODEL), *loaded_stuff, init_history_list(user_name, prepend=current_model.history_file_path[:-5])
 
 
     demo.load(create_greeting, inputs=None, outputs=[

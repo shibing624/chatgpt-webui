@@ -10,7 +10,6 @@ import json
 import os
 from io import BytesIO
 
-import colorama
 import gradio as gr
 import requests
 from PIL import Image
@@ -27,7 +26,6 @@ from src.presets import (
     READ_TIMEOUT_MSG,
     ERROR_RETRIEVE_MSG,
     GENERAL_ERROR_MSG,
-    GENERATE_ERROR_MSG,
     CHAT_COMPLETION_URL,
     SUMMARY_CHAT_SYSTEM_PROMPT
 )
@@ -72,9 +70,10 @@ def decode_chat_response(response):
                     continue
         if error_msg and not error_msg.endswith("[DONE]"):
             raise Exception(error_msg)
-    except GeneratorExit as e:
-        logger.error(f"Error in generate: {str(e)}")
-        raise ValueError("GeneratorExit in generate")
+    except GeneratorExit as ge:
+        raise ValueError(f"GeneratorExit: {ge}")
+    except Exception as e:
+        raise Exception(f"Error in generate: {str(e)}")
 
 
 class OpenAIClient(BaseLLMModel):
@@ -103,15 +102,11 @@ class OpenAIClient(BaseLLMModel):
             raise ValueError("API key is not set")
         response = self._get_response(stream=True)
         if response is not None:
-            try:
-                stream_iter = decode_chat_response(response)
-                partial_text = ""
-                for chunk in stream_iter:
-                    partial_text += chunk
-                    yield partial_text
-            except ValueError as e:
-                logger.error(f"GeneratorExit while generating answers: {str(e)}")
-                yield GENERATE_ERROR_MSG
+            stream_iter = decode_chat_response(response)
+            partial_text = ""
+            for chunk in stream_iter:
+                partial_text += chunk
+                yield partial_text
         else:
             yield STANDARD_ERROR_MSG + GENERAL_ERROR_MSG
 
@@ -169,7 +164,7 @@ class OpenAIClient(BaseLLMModel):
         openai_api_key = self.api_key
         system_prompt = self.system_prompt
         history = self.history
-        logger.debug(f"{history}")
+        # logger.debug(f"{history}")
         headers = {
             "Authorization": f"Bearer {openai_api_key}",
             "Content-Type": "application/json",
@@ -328,15 +323,11 @@ class OpenAIVisionClient(BaseLLMModel):
     def get_answer_stream_iter(self):
         response = self._get_response(stream=True)
         if response is not None:
-            try:
-                stream_iter = decode_chat_response(response)
-                partial_text = ""
-                for chunk in stream_iter:
-                    partial_text += chunk
-                    yield partial_text
-            except ValueError as e:
-                logger.error(f"GeneratorExit while generating answers: {str(e)}")
-                yield GENERATE_ERROR_MSG
+            stream_iter = decode_chat_response(response)
+            partial_text = ""
+            for chunk in stream_iter:
+                partial_text += chunk
+                yield partial_text
         else:
             yield STANDARD_ERROR_MSG + GENERAL_ERROR_MSG
 

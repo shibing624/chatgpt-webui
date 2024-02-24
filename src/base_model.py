@@ -26,8 +26,6 @@ from src.presets import (
     TOKEN_OFFSET,
     REDUCE_TOKEN_FACTOR,
     STANDARD_ERROR_MSG,
-    GENERAL_ERROR_MSG,
-    GENERATE_ERROR_MSG,
     NO_APIKEY_MSG,
     BILLING_NOT_APPLICABLE_MSG,
     NO_INPUT_MSG,
@@ -190,9 +188,6 @@ class BaseLLMModel:
         user_token_count = self.count_token(inputs)
         self.all_token_counts.append(user_token_count)
         logger.debug(f"输入token计数: {user_token_count}")
-
-        stream_iter = self.get_answer_stream_iter()
-
         if display_append:
             display_append = (
                     '\n\n<hr class="append-display no-in-raw" />' + display_append
@@ -200,13 +195,9 @@ class BaseLLMModel:
 
         partial_text = ""
         token_increment = 1
-        for partial_text in stream_iter:
+        for partial_text in self.get_answer_stream_iter():
             if type(partial_text) == tuple:
                 partial_text, token_increment = partial_text
-            elif partial_text == GENERATE_ERROR_MSG:
-                status_text = GENERATE_ERROR_MSG
-                yield get_return_value()
-                break
             chatbot[-1] = (chatbot[-1][0], partial_text + display_append)
             self.all_token_counts[-1] += token_increment
             status_text = self.token_message()
