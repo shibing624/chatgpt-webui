@@ -8,7 +8,7 @@ from loguru import logger
 from tqdm import tqdm
 
 from src.config import local_embedding, retrieve_proxy, chunk_overlap, chunk_size, hf_emb_model_name
-from src.presets import OPENAI_API_BASE
+from src import shared
 from src.utils import excel_to_string, get_files_hash, load_pkl, save_pkl
 
 pwd_path = os.path.abspath(os.path.dirname(__file__))
@@ -185,9 +185,8 @@ def construct_index(
     else:
         from langchain.embeddings import OpenAIEmbeddings
         if os.environ.get("OPENAI_API_TYPE", "openai") == "openai":
-            openai_api_base = os.environ.get("OPENAI_API_BASE", OPENAI_API_BASE)
             embeddings = OpenAIEmbeddings(
-                openai_api_base=openai_api_base,
+                openai_api_base=shared.state.openai_api_base,
                 openai_api_key=os.environ.get("OPENAI_EMBEDDING_API_KEY", api_key)
             )
         else:

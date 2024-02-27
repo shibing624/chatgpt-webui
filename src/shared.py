@@ -30,14 +30,12 @@ class State:
         self.openai_api_base = f"{api_host}/v1"
         self.balance_api_url = f"{api_host}/dashboard/billing/credit_grants"
         self.usage_api_url = f"{api_host}/dashboard/billing/usage"
-        os.environ["OPENAI_API_BASE"] = api_host
 
     def reset_api_host(self):
         self.chat_completion_url = CHAT_COMPLETION_URL
         self.images_completion_url = IMAGES_COMPLETION_URL
         self.balance_api_url = BALANCE_API_URL
         self.usage_api_url = USAGE_API_URL
-        os.environ["OPENAI_API_BASE"] = f"https://{API_HOST}"
         return API_HOST
 
     def reset_all(self):
