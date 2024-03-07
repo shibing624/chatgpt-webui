@@ -259,39 +259,48 @@ class BaseLLMModel:
             assert index is not None, "获取索引失败"
             msg = "索引获取成功，生成回答中……"
             logger.info(msg)
-            with retrieve_proxy():
-                if local_embedding:
-                    k = 3
-                    score_threshold = 0.4
-                    vec_retriever = VectorStoreRetriever(
-                        vectorstore=index,
-                        search_type="similarity_score_threshold",
-                        search_kwargs={"k": k, "score_threshold": score_threshold}
-                    )
-                    bm25_retriever = BM25Retriever.from_documents(documents, preprocess_func=chinese_preprocessing_func)
-                    bm25_retriever.k = k
-                    retriever = EnsembleRetriever(
-                        retrievers=[bm25_retriever, vec_retriever],
-                        weights=[0.5, 0.5],
-                    )
-                else:
-                    k = 5
-                    retriever = VectorStoreRetriever(
-                        vectorstore=index,
-                        search_type="similarity",
-                        search_kwargs={"k": k}
-                    )
-                try:
-                    relevant_documents = retriever.get_relevant_documents(fake_inputs)
-                except:
-                    return self.prepare_inputs(
-                        fake_inputs,
-                        use_websearch,
-                        files,
-                        reply_language,
-                        chatbot,
-                        load_from_cache_if_possible=False,
-                    )
+            file_text = " ".join([d.page_content for d in documents])
+            file_text_token_limit = self.token_upper_limit / 2  # 文档的token上限为模型token上限的一半
+            if self.count_token(file_text) > file_text_token_limit:
+                # 文档token数超限使用检索匹配，否则用知识库文件的全部数据做rag
+                with retrieve_proxy():
+                    if local_embedding:
+                        k = 3
+                        score_threshold = 0.4
+                        vec_retriever = VectorStoreRetriever(
+                            vectorstore=index,
+                            search_type="similarity_score_threshold",
+                            search_kwargs={"k": k, "score_threshold": score_threshold}
+                        )
+                        bm25_retriever = BM25Retriever.from_documents(
+                            documents,
+                            preprocess_func=chinese_preprocessing_func
+                        )
+                        bm25_retriever.k = k
+                        retriever = EnsembleRetriever(
+                            retrievers=[bm25_retriever, vec_retriever],
+                            weights=[0.5, 0.5],
+                        )
+                    else:
+                        k = 5
+                        retriever = VectorStoreRetriever(
+                            vectorstore=index,
+                            search_type="similarity",
+                            search_kwargs={"k": k}
+                        )
+                    try:
+                        relevant_documents = retriever.get_relevant_documents(fake_inputs)
+                    except:
+                        return self.prepare_inputs(
+                            fake_inputs,
+                            use_websearch,
+                            files,
+                            reply_language,
+                            chatbot,
+                            load_from_cache_if_possible=False,
+                        )
+            else:
+                relevant_documents = documents
             reference_results = [
                 [d.page_content.strip("�"), os.path.basename(d.metadata["source"])]
                 for d in relevant_documents

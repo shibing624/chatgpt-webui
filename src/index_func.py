@@ -151,7 +151,7 @@ def get_documents(file_paths):
                                           metadata={"source": filepath}))
             else:
                 logger.debug("Loading text file...")
-                from langchain.document_loaders import TextLoader
+                from langchain_community.document_loaders import TextLoader
                 loader = TextLoader(filepath, "utf8")
                 texts = loader.load()
             logger.debug(f"text size: {len(texts)}, text top3: {texts[:3]}")
@@ -170,7 +170,7 @@ def construct_index(
         files,
         load_from_cache_if_possible=True,
 ):
-    from langchain.vectorstores import FAISS
+    from langchain_community.vectorstores import FAISS
     from langchain.embeddings.huggingface import HuggingFaceEmbeddings
     if api_key:
         os.environ["OPENAI_API_KEY"] = api_key
@@ -183,7 +183,7 @@ def construct_index(
     if local_embedding:
         embeddings = HuggingFaceEmbeddings(model_name=hf_emb_model_name)
     else:
-        from langchain.embeddings import OpenAIEmbeddings
+        from langchain_community.embeddings import OpenAIEmbeddings
         if os.environ.get("OPENAI_API_TYPE", "openai") == "openai":
             embeddings = OpenAIEmbeddings(
                 openai_api_base=shared.state.openai_api_base,

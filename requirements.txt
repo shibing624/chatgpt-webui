@@ -11,7 +11,8 @@ markdown
 pandas
 commentjson
 jinja2
-langchain==0.0.345
+langchain==0.1.10
+langchain-community==0.0.25
 markdown
 PyPDF2
 pdfplumber
