@@ -56,6 +56,8 @@ def decode_chat_response(response):
                     if chunk_length > 6 and "delta" in chunk["choices"][0]:
                         if "finish_reason" in chunk["choices"][0]:
                             finish_reason = chunk["choices"][0]["finish_reason"]
+                        elif "finish_reason" in chunk["choices"][0]['delta']:
+                            finish_reason = chunk["choices"][0]['delta']["finish_reason"]
                         else:
                             finish_reason = chunk["finish_reason"]
                         if finish_reason == "stop":

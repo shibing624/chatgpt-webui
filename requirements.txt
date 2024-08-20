@@ -22,3 +22,5 @@ pydantic==1.10.13
 rank-bm25
 jieba
 loguru
+openai
+unstructured
